@@ -29,17 +29,17 @@ public class CleanroomCache {
         this.version = release.tagName;
     }
 
-    public void download() throws IOException {
+    public Version download() throws IOException {
         if (!Files.isDirectory(this.directory)) {
             Files.createDirectories(this.directory);
         }
-
-        CleanroomInstaller installer = CleanroomInstaller.of(this.version, this.getInstallerJar());
 
         Path installerJar = this.getInstallerJar();
         Path universalJar = this.getUniversalJar();
         Path versionJson = this.getVersionJson();
         Path librariesDirectory = this.getLibrariesDirectory();
+
+        CleanroomInstaller installer = CleanroomInstaller.of(this.version, installerJar);
 
         if (!Files.exists(installerJar)) {
             FileUtils.copyURLToFile(new URL(this.release.getInstallerArtifact().downloadUrl), installerJar.toFile());
@@ -58,6 +58,8 @@ public class CleanroomCache {
                 }
             }
         }
+
+        return version;
     }
 
     public Path getInstallerJar() {
