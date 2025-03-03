@@ -87,19 +87,19 @@ public class CleanroomRelauncher implements IFMLLoadingPlugin {
             LOGGER.info(arg);
 
         File currentDir = (new File("")).getAbsoluteFile();
+
         List<File> libraryFiles = findJarFiles(releaseCache.getLibrariesDirectory().toFile());
         StringBuilder classPath = new StringBuilder();
         for (File lib : libraryFiles) {
             classPath.append(lib.getAbsolutePath()).append(";");
         }
+        classPath.append(releaseCache.getUniversalJar().toString());
 
         List<String> args = new ArrayList<>();
         args.add(javaPath);
         args.addAll(currentArgs);
         args.add("-cp");
         args.add(classPath.toString());
-        args.add("-jar");
-        args.add(releaseCache.getUniversalJar().toString());
         args.add(version.mainClass);
         args.add(version.minecraftArguments);
 
