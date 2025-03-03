@@ -28,7 +28,19 @@ public class CleanroomRelauncher implements IFMLLoadingPlugin {
         LOGGER = LogManager.getLogger("CleanroomRelauncher");
         GSON = new Gson();
 
-        run();
+        if (!isCleanroom()) {
+            run();
+        }
+    }
+
+    private static boolean isCleanroom()
+    {
+        try {
+            Class.forName("com.cleanroommc.boot.Main");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     private static List<File> findJarFiles(File dir) {
