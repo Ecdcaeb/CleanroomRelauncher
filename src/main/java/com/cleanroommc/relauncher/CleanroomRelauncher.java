@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -93,10 +94,10 @@ public class CleanroomRelauncher implements IFMLLoadingPlugin {
 
         LOGGER.info("Relaunching " + version.id);
 
-        List<String> currentArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
-        LOGGER.info("Current arguments:");
-        for (String arg: currentArgs)
-            LOGGER.info(arg);
+//        List<String> currentArgs = ManagementFactory.getRuntimeMXBean().getInputArguments();
+//        LOGGER.info("Current arguments:");
+//        for (String arg: currentArgs)
+//            LOGGER.info(arg);
 
         File currentDir = (new File("")).getAbsoluteFile();
 
@@ -107,13 +108,14 @@ public class CleanroomRelauncher implements IFMLLoadingPlugin {
         }
         classPath.append(releaseCache.getUniversalJar().toString());
 
+        // unfinished
         List<String> args = new ArrayList<>();
         args.add(javaPath);
-        args.addAll(currentArgs);
+//        args.addAll(currentArgs);
         args.add("-cp");
         args.add(classPath.toString());
         args.add(version.mainClass);
-        args.add(version.minecraftArguments);
+        args.addAll(Arrays.asList(version.minecraftArguments.split(" ")));
 
         LOGGER.info("Arguments:");
         for (String arg: args) {
