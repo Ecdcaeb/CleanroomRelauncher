@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -104,12 +105,27 @@ public class CleanroomRelauncher {
         List<String> arguments = new ArrayList<>();
         // arguments.add(java);
         arguments.add("X:\\Caches\\.gradle\\jdks\\azul_systems__inc_-21-amd64-windows\\zulu21.32.17-ca-jdk21.0.2-win_x64\\bin\\javaw.exe");
+
         arguments.add("-cp");
         // arguments.add(String.join(File.pathSeparator, buildClassPath(releaseCache)) + ";" + getOriginalClassPath());
         arguments.add(versions.stream().map(version -> version.libraryPaths).flatMap(Collection::stream).collect(Collectors.joining(File.pathSeparator)));
+
+        for (String argument : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            if (!argument.startsWith("-Djava.library.path")) {
+                arguments.add(argument);
+            }
+        }
+
         arguments.add("-Djava.library.path=" + versions.stream().map(version -> version.nativesPaths).flatMap(Collection::stream).collect(Collectors.joining(File.pathSeparator)));
+
         arguments.add(versions.get(0).mainClass);
-        // arguments.addAll(Arrays.asList(version.minecraftArguments.split(" ")));
+
+        String[] originalProgramArguments = System.getProperty("sun.java.command").split(" ");
+        for (int i = 1; i < originalProgramArguments.length; i++) { // Skip 0 which is the mainClass
+            arguments.add(originalProgramArguments[i]);
+        }
+        arguments.add("--tweakClass");
+        arguments.add("net.minecraftforge.fml.common.launcher.FMLTweaker");
 
         LOGGER.info("Arguments:");
         for (String arg: arguments) {
@@ -123,26 +139,12 @@ public class CleanroomRelauncher {
         try {
             Process process = processBuilder.start();
 
-            /*
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                LOGGER.info(line);
-            }
-            while ((line = errorReader.readLine()) != null) {
-                LOGGER.error(line);
-            }
-             */
-
             int exitCode = process.waitFor();
             LOGGER.info("Process exited with code: {}", exitCode);
             ExitVMBypass.exit(exitCode);
         } catch (IOException | InterruptedException e) {
-            LOGGER.throwing(e);
+            throw new RuntimeException(e);
         }
     }
-
 
 }
