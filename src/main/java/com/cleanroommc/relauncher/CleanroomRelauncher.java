@@ -5,16 +5,13 @@ import com.cleanroommc.relauncher.download.CleanroomRelease;
 import com.cleanroommc.relauncher.download.schema.Version;
 import com.cleanroommc.relauncher.gui.RelauncherGUI;
 import com.google.gson.Gson;
-import net.minecraft.launchwrapper.Launch;
+import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -141,7 +138,7 @@ public class CleanroomRelauncher {
 
             int exitCode = process.waitFor();
             LOGGER.info("Process exited with code: {}", exitCode);
-            System.exit(exitCode);
+            ExitVMBypass.exit(exitCode);
         } catch (IOException | InterruptedException e) {
             LOGGER.throwing(e);
         }
