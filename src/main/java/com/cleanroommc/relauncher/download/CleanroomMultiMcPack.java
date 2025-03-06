@@ -9,17 +9,19 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
-public class CleanroomInstaller implements CleanroomZipArtifact {
+@Deprecated
+public class CleanroomMultiMcPack implements CleanroomZipArtifact {
 
-    public static CleanroomInstaller of(String version, Path location) {
-        return new CleanroomInstaller(version, location);
+    public static CleanroomMultiMcPack of(String version, Path location) {
+        return new CleanroomMultiMcPack(version, location);
     }
 
     private final String version;
     private final Path location;
 
-    private CleanroomInstaller(String version, Path location) {
+    private CleanroomMultiMcPack(String version, Path location) {
         this.version = version;
         this.location = location;
     }
@@ -34,8 +36,12 @@ public class CleanroomInstaller implements CleanroomZipArtifact {
     @Override
     public void extract(CleanroomCache cache) throws IOException {
         try (FileSystem jar = FileSystems.newFileSystem(this.location, null)) {
-            Files.copy(jar.getPath("/version.json"), cache.getVersionJson());
-            Files.copy(jar.getPath("/maven/com/cleanroommc/cleanroom/" + this.version + "/cleanroom-" + this.version + ".jar"), cache.getUniversalJar());
+            Files.copy(jar.getPath("/patches/net.minecraft.json"), cache.getMinecraftJson());
+            Files.copy(jar.getPath("/patches/net.minecraftforge.json"), cache.getForgeJson());
+            Files.copy(jar.getPath("/patches/org.lwjgl3.json"), cache.getLwjglVersionJson());
+            try (Stream<Path> stream = Files.walk(jar.getPath("/libraries/"))) {
+                Files.copy(stream.filter(Files::isRegularFile).findFirst().get(), cache.getUniversalJar());
+            }
         }
     }
 

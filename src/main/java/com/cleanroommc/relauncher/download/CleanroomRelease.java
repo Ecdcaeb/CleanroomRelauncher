@@ -1,7 +1,6 @@
 package com.cleanroommc.relauncher.download;
 
 import com.cleanroommc.relauncher.CleanroomRelauncher;
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
@@ -40,6 +39,16 @@ public class CleanroomRelease {
     public Asset getInstallerArtifact() {
         for (Asset asset : this.assets) {
             if (asset.name.endsWith("-installer.jar")) {
+                return asset;
+            }
+        }
+        return null;
+    }
+
+    @Deprecated
+    public Asset getMultiMcPackArtifact() {
+        for (Asset asset : this.assets) {
+            if (asset.name.endsWith(".zip") && asset.name.contains("MMC")) {
                 return asset;
             }
         }
