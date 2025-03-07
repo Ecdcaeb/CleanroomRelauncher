@@ -1,6 +1,7 @@
 package com.cleanroommc.relauncher.gui;
 
 import com.cleanroommc.relauncher.download.CleanroomRelease;
+import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,6 +29,8 @@ public class RelauncherGUI extends JDialog {
             public void windowClosing(WindowEvent e) {
                 selected = null;
                 dispose();
+
+                ExitVMBypass.exit(0);
             }
         });
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
