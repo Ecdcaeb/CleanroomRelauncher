@@ -1,5 +1,6 @@
 package com.cleanroommc.relauncher.gui;
 
+import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
@@ -44,6 +45,9 @@ public class RelauncherGUI extends JDialog {
 
         JPanel javaPathPanel = new JPanel();
         JTextField textField = new JTextField(20);
+        if (CleanroomRelauncher.CONFIG != null && CleanroomRelauncher.CONFIG.getJavaExecutablePath() != null) {
+            textField.setText(CleanroomRelauncher.CONFIG.getJavaExecutablePath());
+        }
         JLabel label = new JLabel("Enter Java Path:");
         javaPathPanel.add(label);
         javaPathPanel.add(textField);
@@ -57,8 +61,15 @@ public class RelauncherGUI extends JDialog {
 
         JPanel selectionPanel = new JPanel();
         ButtonGroup releaseGroup = new ButtonGroup();
+        CleanroomRelease defaulted = null;
+        if (CleanroomRelauncher.CONFIG != null && CleanroomRelauncher.CONFIG.getCleanroomVersion() != null) {
+            defaulted = eligibleReleases.stream().filter(cr -> cr.name.equals(CleanroomRelauncher.CONFIG.getCleanroomVersion())).findFirst().get();
+        }
         for (CleanroomRelease release : eligibleReleases) {
             JRadioButton radioButton = new JRadioButton(release.name);
+            if (defaulted == release) {
+                radioButton.setEnabled(true);
+            }
             radioButton.setActionCommand(release.name);
             radioButton.addActionListener(e -> {
                 selected = release;

@@ -1,14 +1,16 @@
 package com.cleanroommc.relauncher.config;
 
 import com.cleanroommc.relauncher.CleanroomRelauncher;
+import net.minecraft.launchwrapper.Launch;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Properties;
 
 public class RelauncherConfiguration {
 
-    public static final File LOCATION = new File("cleanroom-relauncher.properties");
+    public static final File LOCATION = new File(Launch.minecraftHome, "cleanroom-relauncher-v1.properties");
 
     public static RelauncherConfiguration read() {
         RelauncherConfiguration config = new RelauncherConfiguration();
@@ -17,12 +19,17 @@ public class RelauncherConfiguration {
             properties.load(fis);
 
             for (Field field : RelauncherConfiguration.class.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
                 try {
                     field.set(config, properties.getProperty(field.getName(), null));
                 } catch (IllegalAccessException e) {
                     CleanroomRelauncher.LOGGER.fatal("Could not set property {}", field.getName(), e);
                 }
             }
+        } catch (FileNotFoundException ignore) {
+            return null;
         } catch (IOException e) {
             CleanroomRelauncher.LOGGER.fatal("Could not read configuration from file!", e);
             return null;
@@ -32,7 +39,7 @@ public class RelauncherConfiguration {
 
     private String cleanroomVersion;
     private String javaExecutablePath;
-    private String jvmArguments;
+    // private String jvmArguments;
 
     public String getCleanroomVersion() {
         return cleanroomVersion;
@@ -42,9 +49,9 @@ public class RelauncherConfiguration {
         return javaExecutablePath;
     }
 
-    public String getJvmArguments() {
-        return jvmArguments;
-    }
+//    public String getJvmArguments() {
+//        return jvmArguments;
+//    }
 
     public void setCleanroomVersion(String cleanroomVersion) {
         this.cleanroomVersion = cleanroomVersion;
@@ -54,15 +61,18 @@ public class RelauncherConfiguration {
         this.javaExecutablePath = javaExecutablePath;
     }
 
-    public void setJvmArguments(String jvmArguments) {
-        this.jvmArguments = jvmArguments;
-    }
+//    public void setJvmArguments(String jvmArguments) {
+//        this.jvmArguments = jvmArguments;
+//    }
 
     public void save() {
         try (FileOutputStream fos = new FileOutputStream(LOCATION)) {
             Properties properties = new Properties();
 
             for (Field field : RelauncherConfiguration.class.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers())) {
+                    continue;
+                }
                 try {
                     properties.setProperty(field.getName(), field.get(this).toString());
                 } catch (IllegalAccessException e) {

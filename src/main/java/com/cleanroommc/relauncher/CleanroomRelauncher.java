@@ -1,5 +1,6 @@
 package com.cleanroommc.relauncher;
 
+import com.cleanroommc.relauncher.config.RelauncherConfiguration;
 import com.cleanroommc.relauncher.download.cache.CleanroomCache;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
 import com.cleanroommc.relauncher.download.schema.Version;
@@ -22,6 +23,8 @@ public class CleanroomRelauncher {
     public static final Logger LOGGER = LogManager.getLogger("CleanroomRelauncher");
     public static final Gson GSON = new Gson();
 
+    public static RelauncherConfiguration CONFIG = RelauncherConfiguration.read();
+
     public CleanroomRelauncher() { }
 
     private static boolean isCleanroom() {
@@ -31,44 +34,6 @@ public class CleanroomRelauncher {
         } catch (ClassNotFoundException e) {
             return false;
         }
-    }
-
-    private static List<File> findJarFiles(File dir) {
-        List<File> jarFiles = new ArrayList<>();
-        if (dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        jarFiles.addAll(findJarFiles(file));
-                    } else if (file.getName().endsWith(".jar")) {
-                        jarFiles.add(file);
-                    }
-                }
-            }
-        }
-        return jarFiles;
-    }
-
-    private static List<String> buildClassPath(CleanroomCache cache) {
-        List<String> classPath = new ArrayList<>();
-
-        classPath.add(cache.getUniversalJar().toAbsolutePath().toString());
-
-        List<File> jars = findJarFiles(cache.getLibrariesDirectory().toFile());
-        for (File jar : jars) {
-            classPath.add(jar.getAbsolutePath());
-        }
-
-        return classPath;
-    }
-
-    private static String getOriginalClassPath() {
-        return System.getProperty("java.class.path");
-    }
-
-    private static String libraryPath() {
-        return System.getProperty("java.library.path");
     }
 
     void run() {
@@ -86,9 +51,29 @@ public class CleanroomRelauncher {
 
         LOGGER.info("{} cleanroom releases were queried.", releases.size());
 
-        RelauncherGUI gui = RelauncherGUI.show(releases);
-        CleanroomRelease release = gui.selected;
-        String java = gui.javaPath;
+        CleanroomRelease release = null;
+        String java = null;
+        if (CONFIG != null) {
+            release = releases.stream().filter(cr -> cr.name.equals(CONFIG.getCleanroomVersion())).findFirst().get();
+            if (new File(CONFIG.getJavaExecutablePath()).isFile()) {
+                java = CONFIG.getJavaExecutablePath();
+            }
+        }
+
+        if (release == null || java == null) {
+            RelauncherGUI gui = RelauncherGUI.show(releases);
+            release = gui.selected;
+            java = gui.javaPath;
+
+            if (CONFIG == null) {
+                CONFIG = new RelauncherConfiguration();
+            }
+            CONFIG.setCleanroomVersion(release.name);
+            CONFIG.setJavaExecutablePath(java);
+
+            CONFIG.save();
+
+        }
 
         CleanroomCache releaseCache = CleanroomCache.of(release);
 
@@ -103,8 +88,7 @@ public class CleanroomRelauncher {
         LOGGER.info("Preparing to relaunch Cleanroom v{}", release.name);
 
         List<String> arguments = new ArrayList<>();
-        // arguments.add(java);
-        arguments.add("X:\\Caches\\.gradle\\jdks\\azul_systems__inc_-21-amd64-windows\\zulu21.32.17-ca-jdk21.0.2-win_x64\\bin\\javaw.exe");
+        arguments.add(java);
 
         arguments.add("-cp");
         // arguments.add(String.join(File.pathSeparator, buildClassPath(releaseCache)) + ";" + getOriginalClassPath());
