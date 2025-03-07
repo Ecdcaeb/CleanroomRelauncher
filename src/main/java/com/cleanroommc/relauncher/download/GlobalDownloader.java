@@ -1,5 +1,6 @@
 package com.cleanroommc.relauncher.download;
 
+import com.cleanroommc.relauncher.CleanroomRelauncher;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -46,9 +47,18 @@ public final class GlobalDownloader {
     }
 
     public void blockUntilFinished() {
+        int total = this.downloads.size();
+        int completed = 0;
+        int last = 0;
         for (Future download : this.downloads) {
             try {
                 download.get();
+                completed++;
+                int percentage = (completed * 100) / total;
+                if (percentage % 10 == 0 && last != percentage) {
+                    last = percentage;
+                    CleanroomRelauncher.LOGGER.info("Download Progress: {} / {} | {}% completed.", completed, total, percentage);
+                }
             } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException("Unable to complete download", e);
             }
