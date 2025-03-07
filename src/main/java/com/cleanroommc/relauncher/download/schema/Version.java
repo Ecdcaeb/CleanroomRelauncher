@@ -66,6 +66,13 @@ public class Version {
             if (!Files.exists(libraryJar)) {
                 GlobalDownloader.INSTANCE.from(library.downloads.artifact.url, libraryJar.toFile());
             }
+            Download nativeArtifact = library.getNative(Platform.CURRENT);
+            if (nativeArtifact != null) {
+                Path nativesJar = librariesDirectory.resolve(nativeArtifact.getPath(library.name));
+                if (!Files.exists(nativesJar)) {
+                    GlobalDownloader.INSTANCE.from(nativeArtifact.url, nativesJar.toFile());
+                }
+            }
             libraryPaths.add(libraryJar.toAbsolutePath().toString());
         }
     }
@@ -74,8 +81,9 @@ public class Version {
         for (Version.Library library : libraries) {
             Download nativeArtifact = library.getNative(Platform.CURRENT);
             if (nativeArtifact != null) {
-                Path jarPath = librariesDirectory.resolve(nativeArtifact.getPath(library.name));
-                Path nativesPath = nativesDirectory.resolve(nativeArtifact.getPath(library.name).substring(0, nativeArtifact.getPath(library.name).lastIndexOf('.')));
+                String relative = nativeArtifact.getPath(library.name);
+                Path jarPath = librariesDirectory.resolve(relative);
+                Path nativesPath = nativesDirectory.resolve(relative.substring(0, relative.lastIndexOf('.')));
                 nativesPaths.add(nativesPath.toAbsolutePath().toString());
                 try (FileSystem jarFs = FileSystems.newFileSystem(jarPath, null)) {
                     try (Stream<Path> walk = Files.walk(jarFs.getPath("/"))) {
@@ -130,6 +138,8 @@ public class Version {
                     return classifierForOS(platform);
                 }
                 return downloads.artifact;
+            } else if (isValidForOS(platform)) {
+                return classifierForOS(platform);
             }
             return null;
         }
@@ -282,12 +292,17 @@ public class Version {
         @Deprecated
         public String getPath(String name) {
             if (path == null) {
-                String[] splits = name.split(":");
-                String groupId = splits[0];
-                String artifactId = splits[1];
-                String version = splits[2];
-                String groupPath = groupId.replace('.', '/');
-                path = String.format("%s/%s/%s/%s-%s.jar", groupPath, artifactId, version, artifactId, version);
+                // Fixme: URLs match, so its fine for now
+                if (url.startsWith("https://libraries.minecraft.net/")) {
+                    path = url.substring("https://libraries.minecraft.net/".length());
+                } else {
+                    String[] splits = name.split(":");
+                    String groupId = splits[0];
+                    String artifactId = splits[1];
+                    String version = splits[2];
+                    String groupPath = groupId.replace('.', '/');
+                    path = String.format("%s/%s/%s/%s-%s.jar", groupPath, artifactId, version, artifactId, version);
+                }
             }
             return path;
         }
