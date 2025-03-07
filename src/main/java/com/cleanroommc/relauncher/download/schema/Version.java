@@ -1,12 +1,11 @@
 package com.cleanroommc.relauncher.download.schema;
 
 import com.cleanroommc.relauncher.CleanroomRelauncher;
+import com.cleanroommc.relauncher.download.GlobalDownloader;
 import com.cleanroommc.relauncher.util.Platform;
-import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -15,13 +14,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class Version {
 
     private static final Map<Platform.OperatingSystem, String> OS_NAMES = new HashMap<>();
-    private static final Pattern NATIVES_PATTERN = Pattern.compile("^(?<group>.*)/(.*?)/(?<version>.*)/((?<name>.*?)-(\\k<version>)-)(?<classifier>.*).jar$");
 
     static {
         OS_NAMES.put(Platform.OperatingSystem.WINDOWS, "windows");
@@ -44,6 +41,7 @@ public class Version {
     public int complianceLevel;
     public Map<String, Download> downloads;
     public String id;
+    public Library mainJar;
     public List<Library> libraries;
     public Object logging;
     public String mainClass;
@@ -57,17 +55,16 @@ public class Version {
 
     // TODO: multithread
     public void downloadLibraries(Path librariesDirectory) {
+        if (mainJar != null) {
+            libraries.add(mainJar); // Fixme
+        }
         for (Version.Library library : libraries) {
             if (library.downloads == null) {
                 continue; // Locally-zipped artifact
             }
             Path libraryJar = librariesDirectory.resolve(library.downloads.artifact.getPath(library.name));
             if (!Files.exists(libraryJar)) {
-                try {
-                    FileUtils.copyURLToFile(new URL(library.downloads.artifact.url), libraryJar.toFile());
-                } catch (Throwable t) {
-                    throw new RuntimeException(String.format("Unable to download %s",library.downloads.artifact.url), t);
-                }
+                GlobalDownloader.INSTANCE.from(library.downloads.artifact.url, libraryJar.toFile());
             }
             libraryPaths.add(libraryJar.toAbsolutePath().toString());
         }

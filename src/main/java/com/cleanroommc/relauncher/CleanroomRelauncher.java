@@ -125,7 +125,7 @@ public class CleanroomRelauncher {
             arguments.add(originalProgramArguments[i]);
         }
         arguments.add("--tweakClass");
-        arguments.add("net.minecraftforge.fml.common.launcher.FMLTweaker");
+        arguments.add("net.minecraftforge.fml.common.launcher.FMLTweaker"); // Fixme, gather from Version?
 
         LOGGER.info("Arguments:");
         for (String arg: arguments) {

@@ -1,5 +1,6 @@
 package com.cleanroommc.relauncher;
 
+import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 import javax.annotation.Nullable;
@@ -8,7 +9,11 @@ import java.util.Map;
 public class CleanroomEntrypoint implements IFMLLoadingPlugin {
 
     public CleanroomEntrypoint() {
-        new CleanroomRelauncher().run();
+        if (FMLLaunchHandler.side().isClient()) {
+            new CleanroomRelauncher().run();
+        } else {
+            CleanroomRelauncher.LOGGER.fatal("Server-side relaunching is not yet supported!");
+        }
     }
 
     @Override

@@ -1,13 +1,11 @@
 package com.cleanroommc.relauncher.download.cache;
 
-import com.cleanroommc.relauncher.download.CleanroomInstaller;
 import com.cleanroommc.relauncher.download.CleanroomMultiMcPack;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
+import com.cleanroommc.relauncher.download.GlobalDownloader;
 import com.cleanroommc.relauncher.download.schema.Version;
-import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,7 +47,7 @@ public class CleanroomCache {
         Path librariesDirectory = this.getLibrariesDirectory();
         Path nativesDirectory = this.getNativesDirectory();
 
-        CleanroomMultiMcPack multiMcPack = CleanroomMultiMcPack.of(this.version, this.getMultiMcPackZip());
+        CleanroomMultiMcPack multiMcPack = CleanroomMultiMcPack.of(this.version, multiMcPackZip);
         // CleanroomInstaller installer = CleanroomInstaller.of(this.version, installerJar);
 
         multiMcPack.install(this.release.getMultiMcPackArtifact().downloadUrl);
@@ -65,31 +63,26 @@ public class CleanroomCache {
          */
 
         List<Version> versions = new ArrayList<>();
+
         Version forgeJsonVersion = Version.parse(forgeJson);
         forgeJsonVersion.libraryPaths.add(this.getUniversalJar().toAbsolutePath().toString());
+
+        Version minecraftJsonVersion = Version.parse(minecraftJson);
+        Version lwjglJsonVersion = Version.parse(lwjglJson);
+
         versions.add(forgeJsonVersion);
-        versions.add(Version.parse(lwjglJson));
-        versions.add(Version.parse(minecraftJson));
+        versions.add(minecraftJsonVersion);
+        versions.add(lwjglJsonVersion);
 
         for (Version version : versions) {
             version.downloadLibraries(librariesDirectory);
+        }
+
+        GlobalDownloader.INSTANCE.blockUntilFinished();
+
+        for (Version version : versions) {
             version.extractNatives(librariesDirectory, nativesDirectory);
         }
-
-        /*
-        Version version = Version.parse(versionJson);
-
-        for (Version.Library library : version.libraries) {
-            if (!library.isNative()) {
-                Path libraryJar = librariesDirectory.resolve(library.downloads.artifact.path);
-                if (!Files.exists(libraryJar)) {
-                    FileUtils.copyURLToFile(new URL(library.downloads.artifact.url), libraryJar.toFile());
-                }
-            } else {
-
-            }
-        }
-         */
 
         // return version;
         return versions;

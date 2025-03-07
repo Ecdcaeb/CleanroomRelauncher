@@ -1,10 +1,8 @@
 package com.cleanroommc.relauncher.download;
 
 import com.cleanroommc.relauncher.download.cache.CleanroomCache;
-import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -29,7 +27,7 @@ public class CleanroomMultiMcPack implements CleanroomZipArtifact {
     @Override
     public void install(String url) throws IOException {
         if (!Files.exists(this.location)) {
-            FileUtils.copyURLToFile(new URL(url), this.location.toFile());
+            GlobalDownloader.INSTANCE.immediatelyFrom(url, this.location.toFile());
         }
     }
 
