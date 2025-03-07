@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2023-09-15
+## [0.1.0] - 2025-03-07
 
 ### Added
-- This is a default template changelog that follows the [KeepAChangelog Convention](https://keepachangelog.com/en/1.1.0/)
+- Relaunches Cleanroom's major versions
