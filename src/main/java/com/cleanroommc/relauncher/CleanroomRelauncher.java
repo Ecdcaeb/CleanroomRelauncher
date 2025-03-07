@@ -6,6 +6,7 @@ import com.cleanroommc.relauncher.download.CleanroomRelease;
 import com.cleanroommc.relauncher.download.schema.Version;
 import com.cleanroommc.relauncher.gui.RelauncherGUI;
 import com.google.gson.Gson;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +17,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CleanroomRelauncher {
@@ -104,10 +106,16 @@ public class CleanroomRelauncher {
 
         arguments.add(versions.get(0).mainClass);
 
-        String[] originalProgramArguments = System.getProperty("sun.java.command").split(" ");
-        for (int i = 1; i < originalProgramArguments.length; i++) { // Skip 0 which is the mainClass
-            arguments.add(originalProgramArguments[i]);
+//        String[] originalProgramArguments = System.getProperty("sun.java.command").split(" ");
+//        for (int i = 1; i < originalProgramArguments.length; i++) { // Skip 0 which is the mainClass
+//            arguments.add(originalProgramArguments[i]);
+//        }
+
+        for (Map.Entry<String, String> launchArgument : ((Map<String, String>) Launch.blackboard.get("launchArgs")).entrySet()) {
+            arguments.add(launchArgument.getKey());
+            arguments.add(launchArgument.getValue());
         }
+
         arguments.add("--tweakClass");
         arguments.add("net.minecraftforge.fml.common.launcher.FMLTweaker"); // Fixme, gather from Version?
 
