@@ -21,7 +21,34 @@ import java.util.Optional;
 
 public class RelauncherGUI extends JDialog {
 
-    private static final int WIDTH = 500, HEIGHT = 500;
+    private static void scaleComponent(Component component, float scale) {
+        if (component instanceof JTextField ||
+                component instanceof JButton ||
+                component instanceof JComboBox) {
+            Dimension size = component.getPreferredSize();
+            component.setPreferredSize(new Dimension(size.width, (int) (size.height * scale)));
+            component.setMaximumSize(new Dimension((int) (size.width * scale), (int) (size.height * scale)));
+        }
+
+        if (component instanceof JLabel ||
+                component instanceof JButton ||
+                component instanceof JTextField ||
+                component instanceof JComboBox) {
+            Font font = component.getFont();
+            if (font != null) {
+                component.setFont(font.deriveFont(font.getSize() * scale));
+            }
+        }
+
+        component.revalidate();
+        component.repaint();
+
+        if (component instanceof Container) {
+            for (Component child : ((Container) component).getComponents()) {
+                scaleComponent(child, scale);
+            }
+        }
+    }
 
     public static RelauncherGUI show(List<CleanroomRelease> eligibleReleases) {
         RelauncherGUI ui = new RelauncherGUI(eligibleReleases);
@@ -45,11 +72,14 @@ public class RelauncherGUI extends JDialog {
         });
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.setAlwaysOnTop(true);
+
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice screen = env.getDefaultScreenDevice();
         Rectangle rect = screen.getDefaultConfiguration().getBounds();
-        int x = (rect.width - WIDTH) / 2;
-        int y = (rect.height - HEIGHT) / 2;
+        int width = rect.width / 5;
+        int height = width;
+        int x = (rect.width - width) / 2;
+        int y = (rect.height - height) / 2;
         this.setLocation(x, y);
 
         JPanel mainPanel = new JPanel();
@@ -80,8 +110,11 @@ public class RelauncherGUI extends JDialog {
 
         this.add(mainPanel, BorderLayout.NORTH);
         this.add(relaunchButton, BorderLayout.SOUTH);
+        float scale = rect.width / 1463f;
+        scaleComponent(this, scale);
+
         this.pack();
-        this.setSize(WIDTH, HEIGHT);
+        this.setSize(width, height);
         this.setVisible(true);
         this.setAutoRequestFocus(true);
     }
@@ -104,7 +137,6 @@ public class RelauncherGUI extends JDialog {
         // Create dropdown panel
         JPanel dropdown = new JPanel(new BorderLayout(5, 5));
         dropdown.setAlignmentX(Component.LEFT_ALIGNMENT);
-        dropdown.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         select.add(dropdown);
 
         // Create the dropdown with release versions
@@ -152,7 +184,6 @@ public class RelauncherGUI extends JDialog {
         select.setLayout(new BoxLayout(select, BoxLayout.Y_AXIS));
         javaPicker.add(select);
         JPanel textPanel = new JPanel(new BorderLayout(5, 5));
-        textPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
         JLabel title = new JLabel("Select Java Executable:");
         textPanel.add(title, BorderLayout.NORTH);
         JTextField text = new JTextField(70);
@@ -167,9 +198,9 @@ public class RelauncherGUI extends JDialog {
         options.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         select.add(options);
         // JButton download = new JButton("Download");
-        JButton autoDetect = new JButton("Auto-Detect");
+        //JButton autoDetect = new JButton("Auto-Detect");
         JButton test = new JButton("Test");
-        options.add(autoDetect);
+        //options.add(autoDetect);
         options.add(test);
 
         text.getDocument().addDocumentListener(new DocumentListener() {
