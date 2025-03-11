@@ -1,5 +1,6 @@
 package com.cleanroommc.relauncher.download.cache;
 
+import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.CleanroomMultiMcPack;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
 import com.cleanroommc.relauncher.download.GlobalDownloader;
@@ -8,13 +9,10 @@ import com.cleanroommc.relauncher.download.schema.Version;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CleanroomCache {
-
-    private static final Path CACHE_DIR = Paths.get(System.getProperty("user.home"), ".cleanroom", "relauncher");
 
     public static CleanroomCache of(CleanroomRelease release) {
         return new CleanroomCache(release);
@@ -25,7 +23,7 @@ public class CleanroomCache {
     private final String version;
 
     private CleanroomCache(CleanroomRelease release) {
-        this.directory = CACHE_DIR.resolve(release.tagName);
+        this.directory = CleanroomRelauncher.CACHE_DIR.resolve(release.tagName);
         this.release = release;
         this.version = release.tagName;
     }
@@ -97,11 +95,11 @@ public class CleanroomCache {
     }
 
     public Path getLibrariesDirectory() {
-        return CACHE_DIR.resolve("libraries/");
+        return CleanroomRelauncher.CACHE_DIR.resolve("libraries/");
     }
 
     public Path getNativesDirectory() {
-        return CACHE_DIR.resolve("natives/");
+        return CleanroomRelauncher.CACHE_DIR.resolve("natives/");
     }
 
     public Path getVersionJson() {
