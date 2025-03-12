@@ -7,6 +7,8 @@ import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -22,14 +24,16 @@ import java.util.Optional;
 public class RelauncherGUI extends JDialog {
 
     private static void scaleComponent(Component component, float scale) {
+        // scaling rect
         if (component instanceof JTextField ||
                 component instanceof JButton ||
                 component instanceof JComboBox) {
             Dimension size = component.getPreferredSize();
-            component.setPreferredSize(new Dimension(size.width, (int) (size.height * scale)));
+            component.setPreferredSize(new Dimension((int) (size.width * scale), (int) (size.height * scale)));
             component.setMaximumSize(new Dimension((int) (size.width * scale), (int) (size.height * scale)));
         }
 
+        // scaling font
         if (component instanceof JLabel ||
                 component instanceof JButton ||
                 component instanceof JTextField ||
@@ -38,6 +42,56 @@ public class RelauncherGUI extends JDialog {
             if (font != null) {
                 component.setFont(font.deriveFont(font.getSize() * scale));
             }
+        }
+
+        // scaling padding
+        if (component instanceof AbstractButton) {
+            AbstractButton button = (AbstractButton) component;
+            Insets margin = button.getMargin();
+            if (margin != null) {
+                button.setMargin(new Insets(
+                        (int) (margin.top * scale),
+                        (int) (margin.left * scale),
+                        (int) (margin.bottom * scale),
+                        (int) (margin.right * scale)
+                ));
+            }
+        } else if (component instanceof JTextField) {
+            JTextField textField = (JTextField) component;
+            Insets margin = textField.getMargin();
+            if (margin != null) {
+                textField.setMargin(new Insets(
+                        (int) (margin.top * scale),
+                        (int) (margin.left * scale),
+                        (int) (margin.bottom * scale),
+                        (int) (margin.right * scale)
+                ));
+            }
+        } else if (component instanceof JComboBox) {
+            JComboBox<?> comboBox = (JComboBox<?>) component;
+            Insets margin = comboBox.getInsets();
+            if (margin != null) {
+                comboBox.setBorder(BorderFactory.createEmptyBorder(
+                        (int) (margin.top * scale),
+                        (int) (margin.left * scale),
+                        (int) (margin.bottom * scale),
+                        (int) (margin.right * scale)
+                ));
+            }
+        } else if (component instanceof JPanel) {
+            JPanel panel = (JPanel) component;
+            Border existingBorder = panel.getBorder();
+
+            Insets margin = existingBorder instanceof EmptyBorder ?
+                    ((EmptyBorder) existingBorder).getBorderInsets()
+                    : new Insets(0, 0, 0, 0);
+
+            panel.setBorder(BorderFactory.createEmptyBorder(
+                    (int) (margin.top * scale),
+                    (int) (margin.left * scale),
+                    (int) (margin.bottom * scale),
+                    (int) (margin.right * scale)
+            ));
         }
 
         component.revalidate();
