@@ -13,8 +13,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -22,6 +21,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class RelauncherGUI extends JDialog {
+
+    static {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignore) { }
+    }
 
     private static void scaleComponent(Component component, float scale) {
         // scaling rect
@@ -105,15 +110,25 @@ public class RelauncherGUI extends JDialog {
     }
 
     public static RelauncherGUI show(List<CleanroomRelease> eligibleReleases) {
-        RelauncherGUI ui = new RelauncherGUI(eligibleReleases);
+        ImageIcon imageIcon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(RelauncherGUI.class.getResource("/cleanroom-relauncher.png")));
+        RelauncherGUI ui = new RelauncherGUI("Cleanroom Relaunch Configuration", imageIcon, eligibleReleases);
         return ui;
     }
 
     public CleanroomRelease selected;
     public String javaPath;
 
-    private RelauncherGUI(List<CleanroomRelease> eligibleReleases) {
-        super((Frame) null, "Cleanroom Relaunch Configuration", true);
+    private RelauncherGUI(String title, ImageIcon icon, List<CleanroomRelease> eligibleReleases) {
+        super(new SupportingFrame(title, icon), title, true);
+
+        this.setIconImage(icon.getImage());
+
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                RelauncherGUI.this.requestFocusInWindow();
+            }
+        });
 
         this.addWindowListener(new WindowAdapter() {
             @Override
@@ -121,6 +136,7 @@ public class RelauncherGUI extends JDialog {
                 selected = null;
                 dispose();
 
+                CleanroomRelauncher.LOGGER.info("No Cleanroom releases were selected, instance is dismissed.");
                 ExitVMBypass.exit(0);
             }
         });
@@ -130,14 +146,17 @@ public class RelauncherGUI extends JDialog {
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice screen = env.getDefaultScreenDevice();
         Rectangle rect = screen.getDefaultConfiguration().getBounds();
-        int width = rect.width / 5;
-        int height = width;
+        int width = rect.width / 3;
+        int height = (int) (width / 1.5);
         int x = (rect.width - width) / 2;
         int y = (rect.height - height) / 2;
         this.setLocation(x, y);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+
+        JLabel cleanroomLogo = new JLabel(new ImageIcon(icon.getImage().getScaledInstance(128, 128, Image.SCALE_SMOOTH)));
+        cleanroomLogo.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         JPanel cleanroomPickerPanel = this.initializeCleanroomPicker(eligibleReleases);
         mainPanel.add(cleanroomPickerPanel);
@@ -162,7 +181,8 @@ public class RelauncherGUI extends JDialog {
             this.dispose();
         });
 
-        this.add(mainPanel, BorderLayout.NORTH);
+        this.add(cleanroomLogo, BorderLayout.NORTH);
+        this.add(mainPanel, BorderLayout.CENTER);
         this.add(relaunchButton, BorderLayout.SOUTH);
         float scale = rect.width / 1463f;
         scaleComponent(this, scale);
@@ -176,7 +196,7 @@ public class RelauncherGUI extends JDialog {
     private JPanel initializeCleanroomPicker(List<CleanroomRelease> eligibleReleases) {
         // Main Panel
         JPanel cleanroomPicker = new JPanel(new BorderLayout(5, 0));
-        cleanroomPicker.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        cleanroomPicker.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel select = new JPanel();
         select.setLayout(new BoxLayout(select, BoxLayout.Y_AXIS));
@@ -240,8 +260,9 @@ public class RelauncherGUI extends JDialog {
         JPanel textPanel = new JPanel(new BorderLayout(5, 5));
         JLabel title = new JLabel("Select Java Executable:");
         textPanel.add(title, BorderLayout.NORTH);
-        JTextField text = new JTextField(70);
+        JTextField text = new JTextField(100);
         textPanel.add(text, BorderLayout.CENTER);
+        // JButton browse = new JButton(UIManager.getIcon("FileView.directoryIcon"));
         JButton browse = new JButton("Browse");
         textPanel.add(browse, BorderLayout.EAST);
         select.add(textPanel);
@@ -249,12 +270,12 @@ public class RelauncherGUI extends JDialog {
         // Options Panel
         JPanel options = new JPanel(new BorderLayout(5, 5));
         options.setLayout(new BoxLayout(options, BoxLayout.X_AXIS));
-        options.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        options.setBorder(BorderFactory.createEmptyBorder(40, 10, 20, 10));
         select.add(options);
         // JButton download = new JButton("Download");
-        //JButton autoDetect = new JButton("Auto-Detect");
+        // JButton autoDetect = new JButton("Auto-Detect");
         JButton test = new JButton("Test");
-        //options.add(autoDetect);
+        // options.add(autoDetect);
         options.add(test);
 
         text.getDocument().addDocumentListener(new DocumentListener() {
@@ -271,6 +292,17 @@ public class RelauncherGUI extends JDialog {
             @Override
             public void changedUpdate(DocumentEvent e) {
                 javaPath = text.getText();
+            }
+        });
+
+        text.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                text.setBorder(BorderFactory.createLineBorder(new Color(142, 177, 204)));
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                text.setBorder(null);
             }
         });
 
