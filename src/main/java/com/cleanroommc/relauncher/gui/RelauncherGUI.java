@@ -167,15 +167,15 @@ public class RelauncherGUI extends JDialog {
         JButton relaunchButton = new JButton("Relaunch Cleanroom");
         relaunchButton.addActionListener(e -> {
             if (selected == null) {
-                JOptionPane.showMessageDialog(mainPanel, "Please select a Cleanroom version in order to relaunch.", "Cleanroom Release Not Selected", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Please select a Cleanroom version in order to relaunch.", "Cleanroom Release Not Selected", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             if (javaPath == null) {
-                JOptionPane.showMessageDialog(mainPanel, "Please provide a valid Java Executable in order to relaunch.", "Java Executable Not Selected", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Please provide a valid Java Executable in order to relaunch.", "Java Executable Not Selected", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             if (!this.testJava(null)) {
-                JOptionPane.showMessageDialog(mainPanel, "Invalid Java Executable, please provide a valid java executable.", "Invalid Java Executable Selected", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Invalid Java Executable, please provide a valid java executable.", "Invalid Java Executable Selected", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             this.dispose();
@@ -376,16 +376,16 @@ public class RelauncherGUI extends JDialog {
             int exitCode = process.waitFor();
             if (testing != null) {
                 if (exitCode == 0) {
-                    JOptionPane.showMessageDialog(testing, "Java executable is working correctly!\n\nVersion Information:\n" + output, "Java Test Successful", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Java executable is working correctly!\n\nVersion Information:\n" + output, "Java Test Successful", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(testing, "Java executable test failed with exit code: " + exitCode, "Java Test Failed", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Java executable test failed with exit code: " + exitCode, "Java Test Failed", JOptionPane.ERROR_MESSAGE);
                 }
             }
             return exitCode == 0;
         } catch (Exception e1) {
             CleanroomRelauncher.LOGGER.fatal("Failed to execute Java for testing", e1);
             if (testing != null) {
-                JOptionPane.showMessageDialog(testing, "Failed to execute Java (more information in console): " + e1.getMessage(), "Java Test Failed", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Failed to execute Java (more information in console): " + e1.getMessage(), "Java Test Failed", JOptionPane.ERROR_MESSAGE);
             }
         }
         return false;
