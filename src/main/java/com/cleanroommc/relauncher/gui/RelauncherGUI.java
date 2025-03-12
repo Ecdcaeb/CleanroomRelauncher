@@ -232,6 +232,9 @@ public class RelauncherGUI extends JDialog {
             FileFilter filter = new FileFilter() {
                 @Override
                 public boolean accept(File file) {
+                    if (file.isDirectory()) {
+                        return true;
+                    }
                     if (file.isFile()) {
                         return !Platform.CURRENT.getOperatingSystem().isWindows() || file.getName().endsWith(".exe");
                     }
