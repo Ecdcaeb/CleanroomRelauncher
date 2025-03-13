@@ -17,13 +17,13 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CleanroomRelauncher {
 
@@ -99,12 +99,12 @@ public class CleanroomRelauncher {
             URI wrapperClassUri = URI.create(RelaunchMainWrapperV1.class.getProtectionDomain().getCodeSource().getLocation().toString());
             if ("jar".equals(wrapperClassUri.getScheme())) {
                 Path wrapperFile = CleanroomRelauncher.CACHE_DIR.resolve("wrapper/com/cleanroommc/relauncher/wrapper/RelaunchMainWrapperV1.class");
-                Files.createDirectories(wrapperFile.getParent());
                 if (!Files.exists(wrapperFile)) {
-                    String wrapperClassString = wrapperClassUri.toString();
-                    String containerPath = wrapperClassString.substring(10, wrapperClassString.indexOf('!'));
+                    String wrapperClassString = URLDecoder.decode(wrapperClassUri.toString(), "UTF-8");
+                    String containerPath = wrapperClassString.substring(9, wrapperClassString.indexOf('!'));
                     try (FileSystem containerFs = FileSystems.newFileSystem(new File(containerPath).toPath(), null)) {
                         Path wrapperDirectory = containerFs.getPath("/com/cleanroommc/relauncher/wrapper/");
+                        Files.createDirectories(wrapperFile.getParent());
                         try (DirectoryStream<Path> stream = Files.newDirectoryStream(wrapperDirectory)) {
                             for (Path path : stream) {
                                 Files.copy(path, wrapperFile.resolveSibling(path.getFileName().toString()));
@@ -114,7 +114,7 @@ public class CleanroomRelauncher {
                 }
                 wrapperClassPath = CleanroomRelauncher.CACHE_DIR.resolve("wrapper").toAbsolutePath().toString();
             } else {
-                wrapperClassPath = new File(wrapperClassUri.getPath()).getAbsolutePath();
+                throw new IOException("How are you running this mod... Location of class is in: " + wrapperClassUri.getPath());
             }
         } catch (IOException e) {
             throw new RuntimeException("Unable to extract RelaunchMainWrapper class to cache directory", e);
