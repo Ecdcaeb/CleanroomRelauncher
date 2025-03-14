@@ -36,6 +36,20 @@ public class RelauncherGUI extends JDialog {
             Dimension size = component.getPreferredSize();
             component.setPreferredSize(new Dimension((int) (size.width * scale), (int) (size.height * scale)));
             component.setMaximumSize(new Dimension((int) (size.width * scale), (int) (size.height * scale)));
+        } else if (component instanceof JLabel) {
+            JLabel label = (JLabel) component;
+            Icon icon = label.getIcon();
+            if (icon instanceof ImageIcon) {
+                ImageIcon imageIcon = (ImageIcon) icon;
+                Image image = imageIcon.getImage();
+                if (image != null) {
+                    Image scaledImage = image.getScaledInstance(
+                            (int) (imageIcon.getIconWidth() * scale),
+                            (int) (imageIcon.getIconHeight() * scale),
+                            Image.SCALE_SMOOTH);
+                    label.setIcon(new ImageIcon(scaledImage));
+                }
+            }
         }
 
         // scaling font
@@ -77,6 +91,17 @@ public class RelauncherGUI extends JDialog {
             Insets margin = comboBox.getInsets();
             if (margin != null) {
                 comboBox.setBorder(BorderFactory.createEmptyBorder(
+                        (int) (margin.top * scale),
+                        (int) (margin.left * scale),
+                        (int) (margin.bottom * scale),
+                        (int) (margin.right * scale)
+                ));
+            }
+        } else if (component instanceof JLabel) {
+            JLabel label = (JLabel) component;
+            Insets margin = label.getInsets();
+            if (margin != null) {
+                label.setBorder(BorderFactory.createEmptyBorder(
                         (int) (margin.top * scale),
                         (int) (margin.left * scale),
                         (int) (margin.bottom * scale),
@@ -155,7 +180,7 @@ public class RelauncherGUI extends JDialog {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        JLabel cleanroomLogo = new JLabel(new ImageIcon(icon.getImage().getScaledInstance(128, 128, Image.SCALE_SMOOTH)));
+        JLabel cleanroomLogo = new JLabel(new ImageIcon(icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
         cleanroomLogo.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         JPanel cleanroomPickerPanel = this.initializeCleanroomPicker(eligibleReleases);
@@ -270,7 +295,7 @@ public class RelauncherGUI extends JDialog {
         // Options Panel
         JPanel options = new JPanel(new BorderLayout(5, 5));
         options.setLayout(new BoxLayout(options, BoxLayout.X_AXIS));
-        options.setBorder(BorderFactory.createEmptyBorder(40, 10, 20, 10));
+        options.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         select.add(options);
         // JButton download = new JButton("Download");
         // JButton autoDetect = new JButton("Auto-Detect");
