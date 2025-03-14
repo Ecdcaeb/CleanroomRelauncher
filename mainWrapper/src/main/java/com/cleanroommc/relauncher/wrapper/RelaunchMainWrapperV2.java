@@ -1,6 +1,8 @@
 package com.cleanroommc.relauncher.wrapper;
 
-public class RelaunchMainWrapperV1 {
+import java.util.Optional;
+
+public class RelaunchMainWrapperV2 {
 
     public static void main(String[] args) throws ReflectiveOperationException {
         String mainClassName = null;
@@ -10,16 +12,17 @@ public class RelaunchMainWrapperV1 {
                 break;
             }
         }
+        Optional<ProcessHandle> optional = ProcessHandle.current().parent();
+        if (optional.isEmpty()) {
+            throw new RuntimeException("Unable to grab parent process!");
+        }
         Thread thread = new Thread("Relauncher Parent Watcher") {
+
+            private final ProcessHandle handle = optional.get();
+
             @Override
             public void run() {
-                try {
-                    while (System.in.read() != -1) {
-                        Thread.sleep(1000);
-                    }
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
+                while (this.handle.isAlive()) { }
                 System.exit(0);
             }
         };

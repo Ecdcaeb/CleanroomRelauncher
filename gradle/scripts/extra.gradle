@@ -3,3 +3,12 @@
 
 // If you wish to use the default helper methods, uncomment the line below
 // apply from: 'gradle/scripts/helpers.gradle'
+
+evaluationDependsOn ':mainWrapper'
+
+tasks.named('jar', Jar) {
+    dependsOn project(':mainWrapper').tasks.named('classes')
+    from {
+        project(':mainWrapper').layout.buildDirectory.dir('classes/java/main/com/cleanroommc/relauncher/')
+    }
+}
