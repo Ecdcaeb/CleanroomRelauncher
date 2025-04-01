@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class RelauncherGUI extends JDialog {
@@ -139,17 +140,18 @@ public class RelauncherGUI extends JDialog {
         }
     }
 
-    public static RelauncherGUI show(List<CleanroomRelease> eligibleReleases) {
+    public static RelauncherGUI show(List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         ImageIcon imageIcon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(RelauncherGUI.class.getResource("/cleanroom-relauncher.png")));
-        RelauncherGUI ui = new RelauncherGUI("Cleanroom Relaunch Configuration", imageIcon, eligibleReleases);
-        return ui;
+        return new RelauncherGUI("Cleanroom Relaunch Configuration", imageIcon, eligibleReleases, consumer);
     }
 
     public CleanroomRelease selected;
-    public String javaPath;
+    public String javaPath, javaArgs;
 
-    private RelauncherGUI(String title, ImageIcon icon, List<CleanroomRelease> eligibleReleases) {
+    private RelauncherGUI(String title, ImageIcon icon, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         super(new SupportingFrame(title, icon), title, true);
+
+        consumer.accept(this);
 
         this.setIconImage(icon.getImage());
 
@@ -194,26 +196,14 @@ public class RelauncherGUI extends JDialog {
         JPanel javaPickerPanel = this.initializeJavaPicker();
         mainPanel.add(javaPickerPanel);
 
-        JButton relaunchButton = new JButton("Relaunch Cleanroom");
-        relaunchButton.addActionListener(e -> {
-            if (selected == null) {
-                JOptionPane.showMessageDialog(this, "Please select a Cleanroom version in order to relaunch.", "Cleanroom Release Not Selected", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (javaPath == null) {
-                JOptionPane.showMessageDialog(this, "Please provide a valid Java Executable in order to relaunch.", "Java Executable Not Selected", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (!this.testJava(null)) {
-                JOptionPane.showMessageDialog(this, "Invalid Java Executable, please provide a valid java executable.", "Invalid Java Executable Selected", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            this.dispose();
-        });
+        JPanel argsPanel = this.initializeArgsPanel();
+        mainPanel.add(argsPanel);
+
+        JPanel relaunchButtonPanel = this.initializeRelaunchPanel();
 
         this.add(cleanroomLogo, BorderLayout.NORTH);
         this.add(mainPanel, BorderLayout.CENTER);
-        this.add(relaunchButton, BorderLayout.SOUTH);
+        this.add(relaunchButtonPanel, BorderLayout.SOUTH);
         float scale = rect.width / 1463f;
         scaleComponent(this, scale);
 
@@ -260,17 +250,7 @@ public class RelauncherGUI extends JDialog {
                 return this;
             }
         });
-        if (CleanroomRelauncher.CONFIG != null && CleanroomRelauncher.CONFIG.getCleanroomVersion() != null) {
-            Optional<CleanroomRelease> defaultRelease = eligibleReleases.stream().filter(release -> release.name.equals(CleanroomRelauncher.CONFIG.getCleanroomVersion())).findFirst();
-            if (defaultRelease.isPresent()) {
-                releaseBox.setSelectedItem(defaultRelease.get());
-            } else {
-                releaseBox.setSelectedItem(null);
-                CleanroomRelauncher.CONFIG.setCleanroomVersion(null);
-            }
-        } else {
-            releaseBox.setSelectedItem(null);
-        }
+        releaseBox.setSelectedItem(selected);
         releaseBox.setMaximumRowCount(5);
         releaseBox.addActionListener(e -> selected = (CleanroomRelease) releaseBox.getSelectedItem());
         dropdown.add(releaseBox, BorderLayout.CENTER);
@@ -281,7 +261,7 @@ public class RelauncherGUI extends JDialog {
     private JPanel initializeJavaPicker() {
         // Main Panel
         JPanel javaPicker = new JPanel(new BorderLayout(5, 0));
-        javaPicker.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        javaPicker.setBorder(BorderFactory.createEmptyBorder(20, 10, 0, 10));
 
         // Select Panel
         JPanel selectPanel = new JPanel(new BorderLayout(5, 5));
@@ -289,8 +269,9 @@ public class RelauncherGUI extends JDialog {
         JPanel subSelectPanel = new JPanel(new BorderLayout(5, 5));
         JLabel title = new JLabel("Select Java Executable:");
         JTextField text = new JTextField(100);
+        text.setText(javaPath);
         JPanel northPanel = new JPanel();
-        northPanel.setLayout(new BorderLayout(5, 5));
+        northPanel.setLayout(new BorderLayout(5, 0));
         northPanel.add(title, BorderLayout.NORTH);
         subSelectPanel.add(northPanel, BorderLayout.NORTH);
         subSelectPanel.add(text, BorderLayout.CENTER);
@@ -301,7 +282,7 @@ public class RelauncherGUI extends JDialog {
         javaPicker.add(selectPanel);
 
         // Java Version Dropdown
-        JPanel versionDropdown = new JPanel(new BorderLayout(5, 5));
+        JPanel versionDropdown = new JPanel(new BorderLayout(5, 0));
         versionDropdown.setAlignmentX(Component.LEFT_ALIGNMENT);
         JComboBox<JavaInstall> versionBox = new JComboBox<>();
         DefaultComboBoxModel<JavaInstall> versionModel = new DefaultComboBoxModel<>();
@@ -331,7 +312,7 @@ public class RelauncherGUI extends JDialog {
         northPanel.add(versionDropdown, BorderLayout.CENTER);
 
         // Options Panel
-        JPanel options = new JPanel(new BorderLayout(5, 5));
+        JPanel options = new JPanel(new BorderLayout(5, 0));
         options.setLayout(new BoxLayout(options, BoxLayout.X_AXIS));
         options.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         selectPanel.add(options);
@@ -341,33 +322,8 @@ public class RelauncherGUI extends JDialog {
         options.add(autoDetect);
         options.add(test);
 
-        text.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                javaPath = text.getText();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                javaPath = text.getText();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                javaPath = text.getText();
-            }
-        });
-
-        text.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                text.setBorder(BorderFactory.createLineBorder(new Color(142, 177, 204)));
-            }
-            @Override
-            public void focusLost(FocusEvent e) {
-                text.setBorder(null);
-            }
-        });
+        listenToTextFieldUpdate(text, t -> javaPath = t.getText());
+        addTextBoxEffect(text);
 
         browse.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
@@ -453,7 +409,7 @@ public class RelauncherGUI extends JDialog {
                 protected void done() {
                     timer.stop();
                     autoDetect.setText(original);
-                    JOptionPane.showMessageDialog(RelauncherGUI.this, javaInstalls.size() + " Java Installs Found!", "Auto-detect Java Installs Finished", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(RelauncherGUI.this, javaInstalls.size() + " Java Installs Found!", "Auto-Detection Finished", JOptionPane.INFORMATION_MESSAGE);
                     autoDetect.setEnabled(true);
 
                     versionModel.removeAllElements();
@@ -468,6 +424,81 @@ public class RelauncherGUI extends JDialog {
         });
 
         return javaPicker;
+    }
+
+    private JPanel initializeArgsPanel() {
+        // Main Panel
+        JPanel argsPanel = new JPanel(new BorderLayout(0, 0));
+        argsPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+
+        JLabel title = new JLabel("Add Java Arguments:");
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JTextField text = new JTextField(100);
+        text.setText(javaArgs);
+        listenToTextFieldUpdate(text, t -> javaArgs = t.getText());
+        addTextBoxEffect(text);
+
+        argsPanel.add(title, BorderLayout.NORTH);
+        argsPanel.add(text, BorderLayout.CENTER);
+
+        return argsPanel;
+    }
+
+    private JPanel initializeRelaunchPanel() {
+        JPanel relaunchButtonPanel = new JPanel();
+
+        JButton relaunchButton = new JButton("Relaunch with Cleanroom");
+        relaunchButtonPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 5, 10));
+        relaunchButton.addActionListener(e -> {
+            if (selected == null) {
+                JOptionPane.showMessageDialog(this, "Please select a Cleanroom version in order to relaunch.", "Cleanroom Release Not Selected", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (javaPath == null) {
+                JOptionPane.showMessageDialog(this, "Please provide a valid Java Executable in order to relaunch.", "Java Executable Not Selected", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!this.testJava(null)) {
+                JOptionPane.showMessageDialog(this, "Invalid Java Executable, please provide a valid java executable.", "Invalid Java Executable Selected", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            this.dispose();
+        });
+        relaunchButtonPanel.add(relaunchButton);
+
+        return relaunchButtonPanel;
+    }
+
+    private void listenToTextFieldUpdate(JTextField text, Consumer<JTextField> textConsumer) {
+        text.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                textConsumer.accept(text);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                textConsumer.accept(text);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                textConsumer.accept(text);
+            }
+        });
+    }
+
+    private void addTextBoxEffect(JTextField text) {
+        text.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                text.setBorder(BorderFactory.createLineBorder(new Color(142, 177, 204)));
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                text.setBorder(null);
+            }
+        });
     }
 
     private boolean testJava(@Nullable JDialog testing) {

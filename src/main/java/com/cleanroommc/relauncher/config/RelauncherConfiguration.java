@@ -1,45 +1,39 @@
 package com.cleanroommc.relauncher.config;
 
 import com.cleanroommc.relauncher.CleanroomRelauncher;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.minecraft.launchwrapper.Launch;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Properties;
 
 public class RelauncherConfiguration {
 
-    public static final File LOCATION = new File(Launch.minecraftHome, "cleanroom-relauncher-v1.properties");
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final File FILE = new File(Launch.minecraftHome, "config/relauncher.json");
+
+    static {
+        File oldConfig = new File(Launch.minecraftHome, "cleanroom-relauncher-v1.properties");
+        if (oldConfig.exists()) {
+            oldConfig.delete();
+        }
+    }
 
     public static RelauncherConfiguration read() {
-        RelauncherConfiguration config = new RelauncherConfiguration();
-        try (FileInputStream fis = new FileInputStream(LOCATION)) {
-            Properties properties = new Properties();
-            properties.load(fis);
-
-            for (Field field : RelauncherConfiguration.class.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers())) {
-                    continue;
-                }
-                try {
-                    field.set(config, properties.getProperty(field.getName(), null));
-                } catch (IllegalAccessException e) {
-                    CleanroomRelauncher.LOGGER.fatal("Could not set property {}", field.getName(), e);
-                }
-            }
-        } catch (FileNotFoundException ignore) {
-            return null;
-        } catch (IOException e) {
-            CleanroomRelauncher.LOGGER.fatal("Could not read configuration from file!", e);
-            return null;
+        if (!FILE.exists()) {
+            return new RelauncherConfiguration();
         }
-        return config;
+        try (FileReader reader = new FileReader(FILE)) {
+            return GSON.fromJson(reader, RelauncherConfiguration.class);
+        } catch (IOException e) {
+            CleanroomRelauncher.LOGGER.error("Unable to read config", e);
+            return new RelauncherConfiguration();
+        }
     }
 
     private String cleanroomVersion;
     private String javaExecutablePath;
-    // private String jvmArguments;
+    private String javaArguments;
 
     public String getCleanroomVersion() {
         return cleanroomVersion;
@@ -49,40 +43,27 @@ public class RelauncherConfiguration {
         return javaExecutablePath;
     }
 
-//    public String getJvmArguments() {
-//        return jvmArguments;
-//    }
+    public String getJavaArguments() {
+        return javaArguments;
+    }
 
     public void setCleanroomVersion(String cleanroomVersion) {
         this.cleanroomVersion = cleanroomVersion;
     }
 
     public void setJavaExecutablePath(String javaExecutablePath) {
-        this.javaExecutablePath = javaExecutablePath;
+        this.javaExecutablePath = javaExecutablePath.replace("\\\\", "/");
     }
 
-//    public void setJvmArguments(String jvmArguments) {
-//        this.jvmArguments = jvmArguments;
-//    }
+    public void setJavaArguments(String javaArguments) {
+        this.javaArguments = javaArguments;
+    }
 
     public void save() {
-        try (FileOutputStream fos = new FileOutputStream(LOCATION)) {
-            Properties properties = new Properties();
-
-            for (Field field : RelauncherConfiguration.class.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers())) {
-                    continue;
-                }
-                try {
-                    properties.setProperty(field.getName(), field.get(this).toString());
-                } catch (IllegalAccessException e) {
-                    CleanroomRelauncher.LOGGER.fatal("Could not get property {}", field.getName(), e);
-                }
-            }
-
-            properties.store(fos, "This is the relauncher properties file, it is first set up via a GUI, the GUI will never spawn after the first configuration unless this file is removed.");
+        try (FileWriter writer = new FileWriter(FILE)) {
+            GSON.toJson(this, writer);
         } catch (IOException e) {
-            CleanroomRelauncher.LOGGER.fatal("Could not write configuration to file!", e);
+            CleanroomRelauncher.LOGGER.error("Unable to save config", e);
         }
     }
 

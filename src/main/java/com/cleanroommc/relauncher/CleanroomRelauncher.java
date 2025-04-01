@@ -1,29 +1,23 @@
 package com.cleanroommc.relauncher;
 
+import com.cleanroommc.javautils.JavaUtils;
 import com.cleanroommc.relauncher.config.RelauncherConfiguration;
 import com.cleanroommc.relauncher.download.cache.CleanroomCache;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
 import com.cleanroommc.relauncher.download.schema.Version;
 import com.cleanroommc.relauncher.gui.RelauncherGUI;
-import com.cleanroommc.relauncher.util.JavaUtils;
 import com.google.gson.Gson;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.ProcessIdUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,27 +56,37 @@ public class CleanroomRelauncher {
         LOGGER.info("{} cleanroom releases were queried.", releases.size());
 
         CleanroomRelease release = null;
-        String java = null;
-        if (CONFIG != null) {
-            release = releases.stream().filter(cr -> cr.name.equals(CONFIG.getCleanroomVersion())).findFirst().get();
-            if (new File(CONFIG.getJavaExecutablePath()).isFile()) {
-                java = CONFIG.getJavaExecutablePath();
-            }
+        String releaseVersion = CONFIG.getCleanroomVersion();
+        String java = CONFIG.getJavaExecutablePath();
+        String javaArgs = CONFIG.getJavaArguments();
+        if (releaseVersion != null) {
+            release = releases.stream().filter(cr -> cr.name.equals(releaseVersion)).findFirst().get();
         }
-
+        if (java != null && !new File(java).isFile()) {
+            java = null;
+        }
+//        if (javaArgs == null) {
+//            javaArgs = String.join(" ", ManagementFactory.getRuntimeMXBean().getInputArguments());
+//        }
         if (release == null || java == null) {
-            RelauncherGUI gui = RelauncherGUI.show(releases);
+            final CleanroomRelease fRelease = release;
+            final String fJava = java;
+            final String fJavaArgs = javaArgs;
+            RelauncherGUI gui = RelauncherGUI.show(releases, $ -> {
+                $.selected = fRelease;
+                $.javaPath = fJava;
+                $.javaArgs = fJavaArgs;
+            });
+
             release = gui.selected;
             java = gui.javaPath;
+            javaArgs = gui.javaArgs;
 
-            if (CONFIG == null) {
-                CONFIG = new RelauncherConfiguration();
-            }
             CONFIG.setCleanroomVersion(release.name);
             CONFIG.setJavaExecutablePath(java);
+            CONFIG.setJavaArguments(javaArgs);
 
             CONFIG.save();
-
         }
 
         CleanroomCache releaseCache = CleanroomCache.of(release);
@@ -148,12 +152,6 @@ public class CleanroomRelauncher {
         arguments.add("-Djava.library.path=" + versions.stream().map(version -> version.nativesPaths).flatMap(Collection::stream).collect(Collectors.joining(File.pathSeparator)));
 
         arguments.add("com.cleanroommc.relauncher.wrapper.RelaunchMainWrapperV2");
-        // arguments.add(versions.get(0).mainClass);
-
-//        String[] originalProgramArguments = System.getProperty("sun.java.command").split(" ");
-//        for (int i = 1; i < originalProgramArguments.length; i++) { // Skip 0 which is the mainClass
-//            arguments.add(originalProgramArguments[i]);
-//        }
 
         for (Map.Entry<String, String> launchArgument : ((Map<String, String>) Launch.blackboard.get("launchArgs")).entrySet()) {
             arguments.add(launchArgument.getKey());
