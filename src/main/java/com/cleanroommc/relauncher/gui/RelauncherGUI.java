@@ -9,6 +9,7 @@ import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class RelauncherGUI extends JDialog {
@@ -309,7 +311,8 @@ public class RelauncherGUI extends JDialog {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof JavaInstall) {
-                    setText(((JavaInstall) value).version().toString());
+                    JavaInstall javaInstall = (JavaInstall) value;
+                    setText(javaInstall.vendor() + " " + javaInstall.version());
                 }
                 return this;
             }
@@ -318,7 +321,8 @@ public class RelauncherGUI extends JDialog {
         versionBox.setMaximumRowCount(10);
         versionBox.addActionListener(e -> {
             if (versionBox.getSelectedItem() != null) {
-                javaPath = ((JavaInstall) versionBox.getSelectedItem()).home().getAbsolutePath();
+                JavaInstall javaInstall = (JavaInstall) versionBox.getSelectedItem();
+                javaPath = javaInstall.executable(true).getAbsolutePath();
                 text.setText(javaPath);
             }
         });
@@ -417,12 +421,50 @@ public class RelauncherGUI extends JDialog {
         });
 
         autoDetect.addActionListener(e -> {
-            Set<JavaInstall> javaInstalls = JavaLocator.locators().parallelStream().map(JavaLocator::all).flatMap(Collection::stream).collect(Collectors.toSet());
-            versionModel.removeAllElements();
-            for (JavaInstall install : javaInstalls) {
-                versionModel.addElement(install);
-            }
-            versionDropdown.setVisible(true);
+            String original = autoDetect.getText();
+            autoDetect.setText("Detecting");
+            autoDetect.setEnabled(false);
+
+            AtomicInteger dotI = new AtomicInteger(0);
+            String[] dots = { ".", "..", "..." };
+            Timer timer = new Timer(400, te -> {
+                autoDetect.setText("Detecting" + dots[dotI.get()]);
+                dotI.set((dotI.get() + 1) % dots.length);
+            });
+            timer.start();
+
+            new SwingWorker<Void, Void>() {
+
+                List<JavaInstall> javaInstalls = Collections.emptyList();
+
+                @Override
+                protected Void doInBackground() {
+                    this.javaInstalls = JavaLocator.locators().parallelStream()
+                            .map(JavaLocator::all)
+                            .flatMap(Collection::stream)
+                            .filter(javaInstall -> javaInstall.version().major() >= 21)
+                            .distinct()
+                            .sorted()
+                            .collect(Collectors.toList());
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    timer.stop();
+                    autoDetect.setText(original);
+                    JOptionPane.showMessageDialog(RelauncherGUI.this, javaInstalls.size() + " Java Installs Found!", "Auto-detect Java Installs Finished", JOptionPane.INFORMATION_MESSAGE);
+                    autoDetect.setEnabled(true);
+
+                    versionModel.removeAllElements();
+                    for (JavaInstall install : javaInstalls) {
+                        versionModel.addElement(install);
+                    }
+                    versionDropdown.setVisible(true);
+                }
+
+            }.execute();
+
         });
 
         return javaPicker;
