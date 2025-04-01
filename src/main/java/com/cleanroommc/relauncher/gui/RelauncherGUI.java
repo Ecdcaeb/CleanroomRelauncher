@@ -1,5 +1,7 @@
 package com.cleanroommc.relauncher.gui;
 
+import com.cleanroommc.javautils.api.JavaInstall;
+import com.cleanroommc.javautils.spi.JavaLocator;
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
 import com.cleanroommc.relauncher.util.Platform;
@@ -17,8 +19,9 @@ import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class RelauncherGUI extends JDialog {
 
@@ -172,7 +175,7 @@ public class RelauncherGUI extends JDialog {
         GraphicsDevice screen = env.getDefaultScreenDevice();
         Rectangle rect = screen.getDefaultConfiguration().getBounds();
         int width = rect.width / 3;
-        int height = (int) (width / 1.5);
+        int height = (int) (width / 1.4f);
         int x = (rect.width - width) / 2;
         int y = (rect.height - height) / 2;
         this.setLocation(x, y);
@@ -279,28 +282,59 @@ public class RelauncherGUI extends JDialog {
         javaPicker.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 
         // Select Panel
-        JPanel select = new JPanel(new BorderLayout(5, 5));
-        select.setLayout(new BoxLayout(select, BoxLayout.Y_AXIS));
-        javaPicker.add(select);
-        JPanel textPanel = new JPanel(new BorderLayout(5, 5));
+        JPanel selectPanel = new JPanel(new BorderLayout(5, 5));
+        selectPanel.setLayout(new BoxLayout(selectPanel, BoxLayout.Y_AXIS));
+        JPanel subSelectPanel = new JPanel(new BorderLayout(5, 5));
         JLabel title = new JLabel("Select Java Executable:");
-        textPanel.add(title, BorderLayout.NORTH);
         JTextField text = new JTextField(100);
-        textPanel.add(text, BorderLayout.CENTER);
+        JPanel northPanel = new JPanel();
+        northPanel.setLayout(new BorderLayout(5, 5));
+        northPanel.add(title, BorderLayout.NORTH);
+        subSelectPanel.add(northPanel, BorderLayout.NORTH);
+        subSelectPanel.add(text, BorderLayout.CENTER);
         // JButton browse = new JButton(UIManager.getIcon("FileView.directoryIcon"));
         JButton browse = new JButton("Browse");
-        textPanel.add(browse, BorderLayout.EAST);
-        select.add(textPanel);
+        subSelectPanel.add(browse, BorderLayout.EAST);
+        selectPanel.add(subSelectPanel);
+        javaPicker.add(selectPanel);
+
+        // Java Version Dropdown
+        JPanel versionDropdown = new JPanel(new BorderLayout(5, 5));
+        versionDropdown.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JComboBox<JavaInstall> versionBox = new JComboBox<>();
+        DefaultComboBoxModel<JavaInstall> versionModel = new DefaultComboBoxModel<>();
+        versionBox.setModel(versionModel);
+        versionBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof JavaInstall) {
+                    setText(((JavaInstall) value).version().toString());
+                }
+                return this;
+            }
+        });
+        versionBox.setSelectedItem(null);
+        versionBox.setMaximumRowCount(10);
+        versionBox.addActionListener(e -> {
+            if (versionBox.getSelectedItem() != null) {
+                javaPath = ((JavaInstall) versionBox.getSelectedItem()).home().getAbsolutePath();
+                text.setText(javaPath);
+            }
+        });
+        versionDropdown.add(versionBox, BorderLayout.CENTER);
+        versionDropdown.setVisible(false);
+        northPanel.add(versionDropdown, BorderLayout.CENTER);
 
         // Options Panel
         JPanel options = new JPanel(new BorderLayout(5, 5));
         options.setLayout(new BoxLayout(options, BoxLayout.X_AXIS));
-        options.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
-        select.add(options);
+        options.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        selectPanel.add(options);
         // JButton download = new JButton("Download");
-        // JButton autoDetect = new JButton("Auto-Detect");
+        JButton autoDetect = new JButton("Auto-Detect");
         JButton test = new JButton("Test");
-        // options.add(autoDetect);
+        options.add(autoDetect);
         options.add(test);
 
         text.getDocument().addDocumentListener(new DocumentListener() {
@@ -380,6 +414,15 @@ public class RelauncherGUI extends JDialog {
             testing.setLocationRelativeTo(this);
 
             this.testJava(testing);
+        });
+
+        autoDetect.addActionListener(e -> {
+            Set<JavaInstall> javaInstalls = JavaLocator.locators().parallelStream().map(JavaLocator::all).flatMap(Collection::stream).collect(Collectors.toSet());
+            versionModel.removeAllElements();
+            for (JavaInstall install : javaInstalls) {
+                versionModel.addElement(install);
+            }
+            versionDropdown.setVisible(true);
         });
 
         return javaPicker;
