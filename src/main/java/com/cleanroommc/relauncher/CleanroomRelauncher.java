@@ -120,6 +120,16 @@ public class CleanroomRelauncher {
             throw new RuntimeException("Unable to extract RelaunchMainWrapper class to cache directory", e);
         }
 
+        // TODO: compartmentalize this also
+        // TODO: only do this for older Javas
+        try (InputStream is = this.getClass().getResource("/cacerts").openStream()) {
+            Path cacertsCopy = Files.createTempFile("cacerts", "");
+            Files.copy(is, cacertsCopy);
+            System.setProperty("javax.net.ssl.trustStore", cacertsCopy.toAbsolutePath().toString());
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to replace CA Certs!", e);
+        }
+
         LOGGER.info("Preparing to relaunch Cleanroom v{}", release.name);
 
         List<String> arguments = new ArrayList<>();
