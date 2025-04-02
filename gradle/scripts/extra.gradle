@@ -6,9 +6,31 @@
 
 evaluationDependsOn ':mainWrapper'
 
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
+}
+
 tasks.named('jar', Jar) {
+    archiveClassifier = 'thin'
     dependsOn project(':mainWrapper').tasks.named('classes')
     from {
         project(':mainWrapper').layout.buildDirectory.dir('classes/java/main/com/cleanroommc/relauncher/')
     }
+}
+
+tasks.shadowJar {
+    dependsOn project(':mainWrapper').tasks.named('classes')
+
+    archiveClassifier = ''
+    configurations = [ project.configurations.shadow ]
+
+    from {
+        project(':mainWrapper').layout.buildDirectory.dir('classes/java/main/com/cleanroommc/relauncher/')
+    }
+
+    relocate 'com.cleanroommc.javautils', 'com.cleanroommc.relauncher.shade.javautils'
+    relocate 'com.cleanroommc.platformutils', 'com.cleanroommc.relauncher.shade.platformutils'
+    relocate 'org.slf4j', 'com.cleanroommc.relauncher.shade.slf4j'
+
+    mergeServiceFiles()
 }
