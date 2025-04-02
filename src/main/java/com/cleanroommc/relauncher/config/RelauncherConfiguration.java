@@ -3,6 +3,7 @@ package com.cleanroommc.relauncher.config;
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 import net.minecraft.launchwrapper.Launch;
 
 import java.io.*;
@@ -31,12 +32,21 @@ public class RelauncherConfiguration {
         }
     }
 
+    @SerializedName("selectedVersion")
     private String cleanroomVersion;
+    @SerializedName("latestVersion")
+    private String latestCleanroomVersion;
+    @SerializedName("javaPath")
     private String javaExecutablePath;
+    @SerializedName("args")
     private String javaArguments;
 
     public String getCleanroomVersion() {
         return cleanroomVersion;
+    }
+
+    public String getLatestCleanroomVersion() {
+        return latestCleanroomVersion;
     }
 
     public String getJavaExecutablePath() {
@@ -49,6 +59,10 @@ public class RelauncherConfiguration {
 
     public void setCleanroomVersion(String cleanroomVersion) {
         this.cleanroomVersion = cleanroomVersion;
+    }
+
+    public void setLatestCleanroomVersion(String latestCleanroomVersion) {
+        this.latestCleanroomVersion = latestCleanroomVersion;
     }
 
     public void setJavaExecutablePath(String javaExecutablePath) {

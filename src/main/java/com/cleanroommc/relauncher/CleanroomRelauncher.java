@@ -47,51 +47,56 @@ public class CleanroomRelauncher {
         }
 
         List<CleanroomRelease> releases;
+        CleanroomRelease latestRelease;
         try {
             releases = CleanroomRelease.queryAll();
+            latestRelease = releases.get(0);
         } catch (IOException e) {
             throw new RuntimeException("Unable to query Cleanroom's releases.", e);
         }
 
         LOGGER.info("{} cleanroom releases were queried.", releases.size());
 
-        CleanroomRelease release = null;
-        String releaseVersion = CONFIG.getCleanroomVersion();
-        String java = CONFIG.getJavaExecutablePath();
+        CleanroomRelease selected = null;
+        String selectedVersion = CONFIG.getCleanroomVersion();
+        String notedLatestVersion = CONFIG.getLatestCleanroomVersion();
+        String javaPath = CONFIG.getJavaExecutablePath();
         String javaArgs = CONFIG.getJavaArguments();
-        if (releaseVersion != null) {
-            release = releases.stream().filter(cr -> cr.name.equals(releaseVersion)).findFirst().get();
+        boolean needsNotifyLatest = notedLatestVersion == null || !notedLatestVersion.equals(latestRelease.name);
+        if (selectedVersion != null) {
+            selected = releases.stream().filter(cr -> cr.name.equals(selectedVersion)).findFirst().get();
         }
-        if (java != null && !new File(java).isFile()) {
-            java = null;
+        if (javaPath != null && !new File(javaPath).isFile()) {
+            javaPath = null;
         }
 //        if (javaArgs == null) {
 //            javaArgs = String.join(" ", ManagementFactory.getRuntimeMXBean().getInputArguments());
 //        }
-        if (release == null || java == null) {
-            final CleanroomRelease fRelease = release;
-            final String fJava = java;
+        if (selected == null || javaPath == null || needsNotifyLatest) {
+            final CleanroomRelease fSelected = selected;
+            final String fJavaPath = javaPath;
             final String fJavaArgs = javaArgs;
             RelauncherGUI gui = RelauncherGUI.show(releases, $ -> {
-                $.selected = fRelease;
-                $.javaPath = fJava;
+                $.selected = fSelected;
+                $.javaPath = fJavaPath;
                 $.javaArgs = fJavaArgs;
             });
 
-            release = gui.selected;
-            java = gui.javaPath;
+            selected = gui.selected;
+            javaPath = gui.javaPath;
             javaArgs = gui.javaArgs;
 
-            CONFIG.setCleanroomVersion(release.name);
-            CONFIG.setJavaExecutablePath(java);
+            CONFIG.setCleanroomVersion(selected.name);
+            CONFIG.setLatestCleanroomVersion(latestRelease.name);
+            CONFIG.setJavaExecutablePath(javaPath);
             CONFIG.setJavaArguments(javaArgs);
 
             CONFIG.save();
         }
 
-        CleanroomCache releaseCache = CleanroomCache.of(release);
+        CleanroomCache releaseCache = CleanroomCache.of(selected);
 
-        LOGGER.info("Preparing Cleanroom v{} and its libraries...", release.name);
+        LOGGER.info("Preparing Cleanroom v{} and its libraries...", selected.name);
         List<Version> versions;
         try {
             versions = releaseCache.download(); // Blocking
@@ -134,10 +139,10 @@ public class CleanroomRelauncher {
             throw new RuntimeException("Unable to replace CA Certs!", e);
         }
 
-        LOGGER.info("Preparing to relaunch Cleanroom v{}", release.name);
+        LOGGER.info("Preparing to relaunch Cleanroom v{}", selected.name);
 
         List<String> arguments = new ArrayList<>();
-        arguments.add(java);
+        arguments.add(javaPath);
 
         arguments.add("-cp");
         // arguments.add(String.join(File.pathSeparator, buildClassPath(releaseCache)) + ";" + getOriginalClassPath());
