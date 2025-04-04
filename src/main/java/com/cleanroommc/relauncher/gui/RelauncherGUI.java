@@ -142,18 +142,21 @@ public class RelauncherGUI extends JDialog {
 
     public static RelauncherGUI show(List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         ImageIcon imageIcon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(RelauncherGUI.class.getResource("/cleanroom-relauncher.png")));
-        return new RelauncherGUI("Cleanroom Relaunch Configuration", imageIcon, eligibleReleases, consumer);
+        return new RelauncherGUI(new SupportingFrame("Cleanroom Relaunch Configuration", imageIcon), eligibleReleases, consumer);
     }
 
     public CleanroomRelease selected;
     public String javaPath, javaArgs;
 
-    private RelauncherGUI(String title, ImageIcon icon, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
-        super(new SupportingFrame(title, icon), title, true);
+    private JFrame frame;
+
+    private RelauncherGUI(SupportingFrame frame, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
+        super(frame, frame.getTitle(), true);
+        this.frame = frame;
 
         consumer.accept(this);
 
-        this.setIconImage(icon.getImage());
+        this.setIconImage(frame.getIconImage());
 
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -166,7 +169,7 @@ public class RelauncherGUI extends JDialog {
             @Override
             public void windowClosing(WindowEvent e) {
                 selected = null;
-                dispose();
+                frame.dispose();
 
                 CleanroomRelauncher.LOGGER.info("No Cleanroom releases were selected, instance is dismissed.");
                 ExitVMBypass.exit(0);
@@ -187,7 +190,7 @@ public class RelauncherGUI extends JDialog {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
-        JLabel cleanroomLogo = new JLabel(new ImageIcon(icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
+        JLabel cleanroomLogo = new JLabel(new ImageIcon(frame.getIconImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
 
         JPanel cleanroomPickerPanel = this.initializeCleanroomPicker(eligibleReleases);
         mainPanel.add(cleanroomPickerPanel);
@@ -476,7 +479,7 @@ public class RelauncherGUI extends JDialog {
                 JOptionPane.showMessageDialog(this, "Invalid Java Executable, please provide a valid java executable.", "Invalid Java Executable Selected", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            this.dispose();
+            frame.dispose();
         });
         relaunchButtonPanel.add(relaunchButton);
 
