@@ -1,6 +1,7 @@
 package com.cleanroommc.relauncher;
 
 import com.cleanroommc.javautils.JavaUtils;
+import com.cleanroommc.javautils.api.JavaVersion;
 import com.cleanroommc.relauncher.config.RelauncherConfiguration;
 import com.cleanroommc.relauncher.download.cache.CleanroomCache;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
@@ -9,6 +10,7 @@ import com.cleanroommc.relauncher.gui.RelauncherGUI;
 import com.google.gson.Gson;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,6 +46,18 @@ public class CleanroomRelauncher {
         if (isCleanroom()) {
             LOGGER.info("Cleanroom detected. No need to relaunch!");
             return;
+        }
+
+        // TODO: compartmentalize this also
+        if (JavaVersion.parseOrThrow(System.getProperty("java.version")).build() <= 101) {
+            try (InputStream is = this.getClass().getResource("/cacerts").openStream()) {
+                File cacertsCopy = File.createTempFile("cacerts", "");
+                cacertsCopy.deleteOnExit();
+                FileUtils.copyInputStreamToFile(is, cacertsCopy);
+                System.setProperty("javax.net.ssl.trustStore", cacertsCopy.getAbsolutePath());
+            } catch (Exception e) {
+                throw new RuntimeException("Unable to replace CA Certs!", e);
+            }
         }
 
         List<CleanroomRelease> releases;
@@ -127,16 +141,6 @@ public class CleanroomRelauncher {
             wrapperClassPath = CleanroomRelauncher.CACHE_DIR.resolve("wrapper").toAbsolutePath().toString();
         } catch (IOException e) {
             throw new RuntimeException("Unable to extract RelaunchMainWrapper class to cache directory", e);
-        }
-
-        // TODO: compartmentalize this also
-        // TODO: only do this for older Javas
-        try (InputStream is = this.getClass().getResource("/cacerts").openStream()) {
-            Path cacertsCopy = Files.createTempFile("cacerts", "");
-            Files.copy(is, cacertsCopy);
-            System.setProperty("javax.net.ssl.trustStore", cacertsCopy.toAbsolutePath().toString());
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to replace CA Certs!", e);
         }
 
         LOGGER.info("Preparing to relaunch Cleanroom v{}", selected.name);
