@@ -6,16 +6,16 @@
 
 evaluationDependsOn ':mainWrapper'
 
-tasks.named('jar') {
-    dependsOn tasks.named('shadowJar')
-}
-
 tasks.named('jar', Jar) {
     archiveClassifier = 'thin'
     dependsOn project(':mainWrapper').tasks.named('classes')
     from {
         project(':mainWrapper').layout.buildDirectory.dir('classes/java/main/com/cleanroommc/relauncher/')
     }
+}
+
+tasks.named('reobfJar') {
+    inputJar.set(tasks.named('shadowJar').flatMap({ it.archiveFile }))
 }
 
 tasks.shadowJar {
