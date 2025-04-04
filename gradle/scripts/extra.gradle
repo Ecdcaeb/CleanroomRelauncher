@@ -6,7 +6,7 @@
 
 evaluationDependsOn ':mainWrapper'
 
-tasks.named('build') {
+tasks.named('jar') {
     dependsOn tasks.named('shadowJar')
 }
 
@@ -22,7 +22,7 @@ tasks.shadowJar {
     dependsOn project(':mainWrapper').tasks.named('classes')
 
     archiveClassifier = ''
-    configurations = [ project.configurations.shadow ]
+    configurations = [ project.configurations.shade ]
 
     from {
         project(':mainWrapper').layout.buildDirectory.dir('classes/java/main/com/cleanroommc/relauncher/')

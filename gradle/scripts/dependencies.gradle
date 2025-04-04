@@ -28,8 +28,13 @@ repositories {
     mavenLocal() // Must be last for caching to work
 }
 
+configurations {
+    shade
+    implementation.extendsFrom shade
+}
+
 dependencies {
-    shadow ('com.cleanroommc:java-utils:1.0.2') {
+    shade ('com.cleanroommc:java-utils:1.0.2') {
         exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
     // Example - Dependency descriptor:
