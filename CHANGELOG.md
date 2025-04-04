@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0] - 2025-04-04
+
+### Added
+- Auto Java Detection
+- Java 9+ Process API usage to check if parent process is alive, much more reliable than older method
+- Certs fix for older Java 8 users
+- Relauncher now pops up if a newer Cleanroom version is fetched
+
+### Changed
+- Configuration now moved to `config/relauncher.json`
+
+### Fixed
+- Various GUI scaling, position issues
+
 ## [0.1.2] - 2025-03-13
 
 ### Fixed
