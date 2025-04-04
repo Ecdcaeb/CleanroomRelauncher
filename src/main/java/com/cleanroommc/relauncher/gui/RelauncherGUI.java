@@ -40,8 +40,8 @@ public class RelauncherGUI extends JDialog {
                 component instanceof JButton ||
                 component instanceof JComboBox) {
             Dimension size = component.getPreferredSize();
-            component.setPreferredSize(new Dimension((int) (size.width * scale), (int) (size.height * scale)));
-            component.setMaximumSize(new Dimension((int) (size.width * scale), (int) (size.height * scale)));
+            component.setPreferredSize(new Dimension((int) (size.width * scale) + 10, (int) (size.height * scale)));
+            component.setMaximumSize(new Dimension((int) (size.width * scale) + 10, (int) (size.height * scale)));
         } else if (component instanceof JLabel) {
             JLabel label = (JLabel) component;
             Icon icon = label.getIcon();
@@ -179,7 +179,7 @@ public class RelauncherGUI extends JDialog {
         GraphicsDevice screen = env.getDefaultScreenDevice();
         Rectangle rect = screen.getDefaultConfiguration().getBounds();
         int width = rect.width / 3;
-        int height = (int) (width / 1.4f);
+        int height = (int) (width / 1.25f);
         int x = (rect.width - width) / 2;
         int y = (rect.height - height) / 2;
         this.setLocation(x, y);
@@ -188,7 +188,6 @@ public class RelauncherGUI extends JDialog {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
         JLabel cleanroomLogo = new JLabel(new ImageIcon(icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
-        cleanroomLogo.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         JPanel cleanroomPickerPanel = this.initializeCleanroomPicker(eligibleReleases);
         mainPanel.add(cleanroomPickerPanel);
@@ -199,10 +198,23 @@ public class RelauncherGUI extends JDialog {
         JPanel argsPanel = this.initializeArgsPanel();
         mainPanel.add(argsPanel);
 
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.add(cleanroomLogo, BorderLayout.NORTH);
+        contentPanel.add(mainPanel, BorderLayout.SOUTH);
+
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        wrapper.add(contentPanel, gbc);
+
         JPanel relaunchButtonPanel = this.initializeRelaunchPanel();
 
-        this.add(cleanroomLogo, BorderLayout.NORTH);
-        this.add(mainPanel, BorderLayout.CENTER);
+        this.add(wrapper, BorderLayout.NORTH);
         this.add(relaunchButtonPanel, BorderLayout.SOUTH);
         float scale = rect.width / 1463f;
         scaleComponent(this, scale);
@@ -409,14 +421,16 @@ public class RelauncherGUI extends JDialog {
                 protected void done() {
                     timer.stop();
                     autoDetect.setText(original);
-                    JOptionPane.showMessageDialog(RelauncherGUI.this, javaInstalls.size() + " Java Installs Found!", "Auto-Detection Finished", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(RelauncherGUI.this, javaInstalls.size() + " Java (21 or higher) Installs Found!", "Auto-Detection Finished", JOptionPane.INFORMATION_MESSAGE);
                     autoDetect.setEnabled(true);
 
-                    versionModel.removeAllElements();
-                    for (JavaInstall install : javaInstalls) {
-                        versionModel.addElement(install);
+                    if (!javaInstalls.isEmpty()) {
+                        versionModel.removeAllElements();
+                        for (JavaInstall install : javaInstalls) {
+                            versionModel.addElement(install);
+                        }
+                        versionDropdown.setVisible(true);
                     }
-                    versionDropdown.setVisible(true);
                 }
 
             }.execute();
@@ -429,7 +443,7 @@ public class RelauncherGUI extends JDialog {
     private JPanel initializeArgsPanel() {
         // Main Panel
         JPanel argsPanel = new JPanel(new BorderLayout(0, 0));
-        argsPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        argsPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
         JLabel title = new JLabel("Add Java Arguments:");
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -448,7 +462,7 @@ public class RelauncherGUI extends JDialog {
         JPanel relaunchButtonPanel = new JPanel();
 
         JButton relaunchButton = new JButton("Relaunch with Cleanroom");
-        relaunchButtonPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 5, 10));
+        relaunchButtonPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         relaunchButton.addActionListener(e -> {
             if (selected == null) {
                 JOptionPane.showMessageDialog(this, "Please select a Cleanroom version in order to relaunch.", "Cleanroom Release Not Selected", JOptionPane.ERROR_MESSAGE);
