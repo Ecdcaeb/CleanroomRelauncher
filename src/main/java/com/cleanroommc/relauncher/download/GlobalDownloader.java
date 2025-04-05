@@ -22,15 +22,18 @@ public final class GlobalDownloader {
     private final List<ForkJoinTask> downloads = new ArrayList<>();
 
     public void from(String source, File destination) {
+        URI uri;
         URL url;
         try {
-            url = URI.create(source).toURL();
+            uri = URI.create(source);
+            url = uri.toURL();
         } catch (MalformedURLException e) {
             throw new RuntimeException(String.format("Unable to construct url %s", source), e);
         }
         this.downloads.add(ForkJoinPool.commonPool().submit(() -> {
             try {
                 FileUtils.copyURLToFile(url, destination);
+                CleanroomRelauncher.LOGGER.debug("Downloaded {} to {}", uri.toString(), destination.getAbsolutePath());
             } catch (IOException e) {
                 throw new RuntimeException(String.format("Unable to download %s to %s", url, destination), e);
             }

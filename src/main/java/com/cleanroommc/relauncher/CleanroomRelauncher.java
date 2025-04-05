@@ -55,6 +55,7 @@ public class CleanroomRelauncher {
                 cacertsCopy.deleteOnExit();
                 FileUtils.copyInputStreamToFile(is, cacertsCopy);
                 System.setProperty("javax.net.ssl.trustStore", cacertsCopy.getAbsolutePath());
+                CleanroomRelauncher.LOGGER.info("Successfully replaced CA Certs.");
             } catch (Exception e) {
                 throw new RuntimeException("Unable to replace CA Certs!", e);
             }
@@ -133,7 +134,9 @@ public class CleanroomRelauncher {
                     Path wrapperJarDirectory = containerFs.getPath("/wrapper/");
                     try (DirectoryStream<Path> stream = Files.newDirectoryStream(wrapperJarDirectory)) {
                         for (Path path : stream) {
-                            Files.copy(path, wrapperFile.resolveSibling(path.getFileName().toString()));
+                            Path to = wrapperFile.resolveSibling(path.getFileName().toString());
+                            Files.copy(path, to);
+                            CleanroomRelauncher.LOGGER.debug("Moved {} to {}", path.toAbsolutePath().toString(), to.toAbsolutePath().toString());
                         }
                     }
                 }
