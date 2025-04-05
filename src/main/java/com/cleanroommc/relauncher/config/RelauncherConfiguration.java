@@ -74,6 +74,7 @@ public class RelauncherConfiguration {
     }
 
     public void save() {
+        FILE.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(FILE)) {
             GSON.toJson(this, writer);
         } catch (IOException e) {
