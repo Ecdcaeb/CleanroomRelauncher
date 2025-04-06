@@ -14,9 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.nio.file.*;
 import java.util.*;
@@ -66,8 +64,9 @@ public class CleanroomRelauncher {
         try {
             releases = CleanroomRelease.queryAll();
             latestRelease = releases.get(0);
+
         } catch (IOException e) {
-            throw new RuntimeException("Unable to query Cleanroom's releases.", e);
+            throw new RuntimeException("Unable to query Cleanroom's releases and no cached releases found.", e);
         }
 
         LOGGER.info("{} cleanroom releases were queried.", releases.size());
@@ -79,7 +78,7 @@ public class CleanroomRelauncher {
         String javaArgs = CONFIG.getJavaArguments();
         boolean needsNotifyLatest = notedLatestVersion == null || !notedLatestVersion.equals(latestRelease.name);
         if (selectedVersion != null) {
-            selected = releases.stream().filter(cr -> cr.name.equals(selectedVersion)).findFirst().get();
+            selected = releases.stream().filter(cr -> cr.name.equals(selectedVersion)).findFirst().orElse(null);
         }
         if (javaPath != null && !new File(javaPath).isFile()) {
             javaPath = null;
@@ -152,8 +151,13 @@ public class CleanroomRelauncher {
         arguments.add(javaPath);
 
         arguments.add("-cp");
-        // arguments.add(String.join(File.pathSeparator, buildClassPath(releaseCache)) + ";" + getOriginalClassPath());
-        arguments.add(wrapperClassPath + File.pathSeparator + versions.stream().map(version -> version.libraryPaths).flatMap(Collection::stream).collect(Collectors.joining(File.pathSeparator)));
+        String libraryClassPath = versions.stream()
+                .map(version -> version.libraryPaths)
+                .flatMap(Collection::stream)
+                .collect(Collectors.joining(File.pathSeparator));
+
+        String fullClassPath = wrapperClassPath + File.pathSeparator + libraryClassPath;
+        arguments.add(fullClassPath); // Ensure this is not empty
 
         for (String argument : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
             if (!argument.startsWith("-Djava.library.path")) {
@@ -194,5 +198,4 @@ public class CleanroomRelauncher {
             throw new RuntimeException(e);
         }
     }
-
 }
