@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1] - 2025-04-06
+
+### Added
+- More useful debug, logs and dialog messages
+
+### Fixed
+- Window not closed properly after the first relaunch
+
+### Changed
+- Disallowed Java installs below Java 21 from being detected
+- Disallowed Java installs below Java 21 from working
+
 ## [0.2.0] - 2025-04-04
 
 ### Added
