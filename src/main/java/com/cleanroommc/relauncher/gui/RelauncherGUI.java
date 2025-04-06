@@ -1,5 +1,6 @@
 package com.cleanroommc.relauncher.gui;
 
+import com.cleanroommc.javautils.JavaUtils;
 import com.cleanroommc.javautils.api.JavaInstall;
 import com.cleanroommc.javautils.spi.JavaLocator;
 import com.cleanroommc.relauncher.CleanroomRelauncher;
@@ -19,6 +20,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
@@ -388,7 +390,7 @@ public class RelauncherGUI extends JDialog {
             JDialog testing = new JDialog(this, "Testing Java Executable", true);
             testing.setLocationRelativeTo(this);
 
-            this.testJava(testing);
+            this.testJava();
         });
 
         autoDetect.addActionListener(e -> {
@@ -424,7 +426,7 @@ public class RelauncherGUI extends JDialog {
                 protected void done() {
                     timer.stop();
                     autoDetect.setText(original);
-                    JOptionPane.showMessageDialog(RelauncherGUI.this, javaInstalls.size() + " Java (21 or higher) Installs Found!", "Auto-Detection Finished", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(RelauncherGUI.this, javaInstalls.size() + " Java 21+ Installs Found!", "Auto-Detection Finished", JOptionPane.INFORMATION_MESSAGE);
                     autoDetect.setEnabled(true);
 
                     if (!javaInstalls.isEmpty()) {
@@ -475,8 +477,9 @@ public class RelauncherGUI extends JDialog {
                 JOptionPane.showMessageDialog(this, "Please provide a valid Java Executable in order to relaunch.", "Java Executable Not Selected", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (!this.testJava(null)) {
-                JOptionPane.showMessageDialog(this, "Invalid Java Executable, please provide a valid java executable.", "Invalid Java Executable Selected", JOptionPane.ERROR_MESSAGE);
+            Runnable test = this.testJavaAndReturn();
+            if (test != null) {
+                test.run();
                 return;
             }
             frame.dispose();
@@ -518,35 +521,35 @@ public class RelauncherGUI extends JDialog {
         });
     }
 
-    private boolean testJava(@Nullable JDialog testing) {
+    private Runnable testJavaAndReturn() {
         try {
-            ProcessBuilder pb = new ProcessBuilder(javaPath, "-version");
-            Process process = pb.start();
-
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
+            JavaInstall javaInstall = JavaUtils.parseInstall(javaPath);
+            if (javaInstall.version().major() < 21) {
+                CleanroomRelauncher.LOGGER.fatal("Java 21+ needed, user specified Java {} instead", javaInstall.version());
+                return () -> JOptionPane.showMessageDialog(this, "Java 21 is the minimum version for Cleanroom. Currently, Java " + javaInstall.version().major() + " is selected.", "Old Java Version", JOptionPane.ERROR_MESSAGE);
             }
-
-            int exitCode = process.waitFor();
-            if (testing != null) {
-                if (exitCode == 0) {
-                    JOptionPane.showMessageDialog(this, "Java executable is working correctly!\n\nVersion Information:\n" + output, "Java Test Successful", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Java executable test failed with exit code: " + exitCode, "Java Test Failed", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-            return exitCode == 0;
-        } catch (Exception e1) {
-            CleanroomRelauncher.LOGGER.fatal("Failed to execute Java for testing", e1);
-            if (testing != null) {
-                JOptionPane.showMessageDialog(this, "Failed to execute Java (more information in console): " + e1.getMessage(), "Java Test Failed", JOptionPane.ERROR_MESSAGE);
-            }
+            CleanroomRelauncher.LOGGER.info("Java {} specified from {}", javaInstall.version().major(), javaPath);
+        } catch (IOException e) {
+            CleanroomRelauncher.LOGGER.fatal("Failed to execute Java for testing", e);
+            return () -> JOptionPane.showMessageDialog(this, "Failed to test Java (more information in console): " + e.getMessage(), "Java Test Failed", JOptionPane.ERROR_MESSAGE);
         }
-        return false;
+        return null;
+    }
+
+    private void testJava() {
+        try {
+            JavaInstall javaInstall = JavaUtils.parseInstall(javaPath);
+            if (javaInstall.version().major() < 21) {
+                CleanroomRelauncher.LOGGER.fatal("Java 21+ needed, user specified Java {} instead", javaInstall.version());
+                JOptionPane.showMessageDialog(this, "Java 21 is the minimum version for Cleanroom. Currently, Java " + javaInstall.version().major() + " is selected.", "Old Java Version", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            CleanroomRelauncher.LOGGER.info("Java {} specified from {}", javaInstall.version().major(), javaPath);
+            JOptionPane.showMessageDialog(this, "Java executable is working correctly!", "Java Test Successful", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            CleanroomRelauncher.LOGGER.fatal("Failed to execute Java for testing", e);
+            JOptionPane.showMessageDialog(this, "Failed to test Java (more information in console): " + e.getMessage(), "Java Test Failed", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
 }
