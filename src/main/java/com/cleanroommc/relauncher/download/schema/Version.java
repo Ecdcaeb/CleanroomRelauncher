@@ -1,8 +1,9 @@
 package com.cleanroommc.relauncher.download.schema;
 
+import com.cleanroommc.platformutils.OperatingSystem;
+import com.cleanroommc.platformutils.Platform;
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.GlobalDownloader;
-import com.cleanroommc.relauncher.util.Platform;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,12 +19,12 @@ import java.util.stream.Stream;
 
 public class Version {
 
-    private static final Map<Platform.OperatingSystem, String> OS_NAMES = new HashMap<>();
+    private static final Map<OperatingSystem, String> OS_NAMES = new HashMap<>();
 
     static {
-        OS_NAMES.put(Platform.OperatingSystem.WINDOWS, "windows");
-        OS_NAMES.put(Platform.OperatingSystem.MAC_OS, "osx");
-        OS_NAMES.put(Platform.OperatingSystem.LINUX, "linux");
+        OS_NAMES.put(OperatingSystem.WINDOWS, "windows");
+        OS_NAMES.put(OperatingSystem.MAC_OS, "osx");
+        OS_NAMES.put(OperatingSystem.LINUX, "linux");
     }
 
     public static Version parse(Path path) throws IOException {
@@ -66,7 +67,7 @@ public class Version {
             if (!Files.exists(libraryJar)) {
                 GlobalDownloader.INSTANCE.from(library.downloads.artifact.url, libraryJar.toFile());
             }
-            Download nativeArtifact = library.getNative(Platform.CURRENT);
+            Download nativeArtifact = library.getNative(Platform.current());
             if (nativeArtifact != null) {
                 Path nativesJar = librariesDirectory.resolve(nativeArtifact.getPath(library.name));
                 if (!Files.exists(nativesJar)) {
@@ -79,7 +80,7 @@ public class Version {
 
     public void extractNatives(Path librariesDirectory, Path nativesDirectory) {
         for (Version.Library library : libraries) {
-            Download nativeArtifact = library.getNative(Platform.CURRENT);
+            Download nativeArtifact = library.getNative(Platform.current());
             if (nativeArtifact != null) {
                 String relative = nativeArtifact.getPath(library.name);
                 Path jarPath = librariesDirectory.resolve(relative);
@@ -163,7 +164,7 @@ public class Version {
             if (rules == null) {
                 return false;
             }
-            if (platform.getOperatingSystem().isWindows() && platform.getArchitecture().is64Bit()) {
+            if (platform.isWindows() && platform.is64Bit()) {
                 if (name.endsWith("x86")) { // Fixme I am going to fucking kill myself
                     return false;
                 }
@@ -197,18 +198,18 @@ public class Version {
             if (natives == null) {
                 return null;
             }
-            String classifier = natives.get(OS_NAMES.get(platform.getOperatingSystem()));
+            String classifier = natives.get(OS_NAMES.get(platform.operatingSystem()));
             if (classifier == null) {
                 return null;
             }
             // TODO: rethink this, especially the x86 variant
-            if (platform.getArchitecture().isArm()) {
-                String bit = platform.getArchitecture().is64Bit() ? "64" : "32";
+            if (platform.isArm()) {
+                String bit = platform.is64Bit() ? "64" : "32";
                 final Download armNative = downloads.classifier(classifier + "-arm" + bit);
                 if (armNative != null) {
                     return armNative;
                 }
-            } else if (platform.getOperatingSystem().isWindows() && !platform.getArchitecture().is64Bit()) {
+            } else if (platform.isWindows() && !platform.is64Bit()) {
                 final Download armNative = downloads.classifier(classifier + "-x86");
                 if (armNative != null) {
                     return armNative;
@@ -260,7 +261,7 @@ public class Version {
             if (name == null) {
                 return true;
             }
-            if (name.equalsIgnoreCase(OS_NAMES.get(platform.getOperatingSystem()))) {
+            if (name.equalsIgnoreCase(OS_NAMES.get(platform.operatingSystem()))) {
                 return true;
             }
             // Fixme
@@ -268,11 +269,11 @@ public class Version {
             if (classifierIndex > -1) {
                 String arch = name.substring(classifierIndex + 1);
                 String os = name.substring(0, classifierIndex);
-                if (os.equalsIgnoreCase(OS_NAMES.get(platform.getOperatingSystem()))) {
-                    if (platform.getArchitecture().isArm()) {
-                        String bit = platform.getArchitecture().is64Bit() ? "64" : "32";
+                if (os.equalsIgnoreCase(OS_NAMES.get(platform.operatingSystem()))) {
+                    if (platform.isArm()) {
+                        String bit = platform.is64Bit() ? "64" : "32";
                         return arch.equals("arm" + bit);
-                    } else if (platform.getOperatingSystem().isWindows() && !platform.getArchitecture().is64Bit()) {
+                    } else if (platform.isWindows() && !platform.is64Bit()) {
                         return arch.equals("x86");
                     }
                 }

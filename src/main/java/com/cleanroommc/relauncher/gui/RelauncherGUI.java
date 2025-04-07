@@ -3,12 +3,11 @@ package com.cleanroommc.relauncher.gui;
 import com.cleanroommc.javautils.JavaUtils;
 import com.cleanroommc.javautils.api.JavaInstall;
 import com.cleanroommc.javautils.spi.JavaLocator;
+import com.cleanroommc.platformutils.Platform;
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
-import com.cleanroommc.relauncher.util.Platform;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.Border;
@@ -18,10 +17,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -358,14 +355,14 @@ public class RelauncherGUI extends JDialog {
                         return true;
                     }
                     if (file.isFile()) {
-                        return !Platform.CURRENT.getOperatingSystem().isWindows() || file.getName().endsWith(".exe");
+                        return !Platform.current().isWindows() || file.getName().endsWith(".exe");
                     }
                     return false;
                 }
 
                 @Override
                 public String getDescription() {
-                    return Platform.CURRENT.getOperatingSystem().isWindows() ? "Java Executable (*.exe)" : "Java Executable";
+                    return Platform.current().isWindows() ? "Java Executable (*.exe)" : "Java Executable";
                 }
             };
             fileChooser.setFileFilter(filter);
