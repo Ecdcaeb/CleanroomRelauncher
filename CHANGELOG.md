@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2] - 2025-04-08
+
+### Fixed
+- Some java paths not being properly recognized and parsed
+
+### Changed
+- Updated JavaUtils
+
 ## [0.2.1] - 2025-04-06
 
 ### Added
