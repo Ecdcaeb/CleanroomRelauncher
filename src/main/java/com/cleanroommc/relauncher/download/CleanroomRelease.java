@@ -2,7 +2,6 @@ package com.cleanroommc.relauncher.download;
 
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,16 +23,20 @@ public class CleanroomRelease {
         // Check if the cache file exists and is not outdated
         if (Files.exists(CACHE_FILE)) {
             CleanroomRelauncher.LOGGER.info("Loading releases from cached releases.json");
-            return fetchReleasesFromCache(CACHE_FILE);
-        } else {
-            CleanroomRelauncher.LOGGER.info("No cache found, fetching releases...");
-            List<CleanroomRelease> releases = fetchReleasesFromGithub();
-
-            // After fetching releases, save them to the cache
-            saveReleasesToCache(CACHE_FILE, releases);
-
-            return releases;
+            try {
+                return fetchReleasesFromCache(CACHE_FILE);
+            } catch (IOException e) {
+                Files.deleteIfExists(CACHE_FILE);
+                CleanroomRelauncher.LOGGER.error("Unable to read cached releases.json, attempting to connect to GitHub and rebuild.", e);
+            }
         }
+        CleanroomRelauncher.LOGGER.info("No cache found, fetching releases...");
+        List<CleanroomRelease> releases = fetchReleasesFromGithub();
+
+        // After fetching releases, save them to the cache
+        saveReleasesToCache(CACHE_FILE, releases);
+
+        return releases;
     }
 
     private static List<CleanroomRelease> fetchReleasesFromGithub() throws IOException {
@@ -48,7 +51,7 @@ public class CleanroomRelease {
             }
 
             try (InputStreamReader reader = new InputStreamReader(connection.getInputStream())) {
-                return CleanroomRelauncher.GSON.fromJson(reader, new TypeToken<List<CleanroomRelease>>(){ }.getType());
+                return Arrays.asList(CleanroomRelauncher.GSON.fromJson(reader, CleanroomRelease[].class));
             }
         } catch (Exception e) {
             throw new IOException("Failed to fetch or parse releases", e);
@@ -61,14 +64,11 @@ public class CleanroomRelease {
      * @param releaseFile the path to the file containing cached release data.
      * @return a list of {@link CleanroomRelease} objects loaded from the cache file.
      *
-     * @throws RuntimeException if an {@link IOException} occurs while reading the file
-     *         or if the content cannot be properly deserialized into the list of releases.
+     * @throws IOException if any occur during reading and deserializing releaseFile
      */
-    private static List<CleanroomRelease> fetchReleasesFromCache(Path releaseFile) {
+    private static List<CleanroomRelease> fetchReleasesFromCache(Path releaseFile) throws IOException {
         try (Reader reader = Files.newBufferedReader(releaseFile)) {
             return Arrays.asList(CleanroomRelauncher.GSON.fromJson(reader, CleanroomRelease[].class));
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to load cached releases.", e);
         }
     }
 
@@ -81,6 +81,7 @@ public class CleanroomRelease {
      * @throws RuntimeException if an {@link IOException} occurs while writing to the file.
      */
     private static void saveReleasesToCache(Path releaseFile, List<CleanroomRelease> releases) {
+        releaseFile.toFile().getParentFile().mkdirs();
         try (Writer writer = Files.newBufferedWriter(releaseFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             CleanroomRelauncher.GSON.toJson(releases, writer);
             CleanroomRelauncher.LOGGER.info("Saved {} releases to cache.", releases.size());
