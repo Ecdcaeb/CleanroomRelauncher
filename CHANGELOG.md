@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.3] - 2025-04-09
+
+### Fixed
+- Edge-case when creating file when parent directory may not exist
+
 ## [0.2.2] - 2025-04-08
 
 ### Fixed
