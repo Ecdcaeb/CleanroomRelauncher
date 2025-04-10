@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.4] - 2025-04-10
+
+### Fixed
+- Fix some Java installs not being detected properly on non-Windows systems
+
+### Changed
+- Updated JavaUtils
+
 ## [0.2.3] - 2025-04-09
 
 ### Fixed
