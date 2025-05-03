@@ -75,6 +75,13 @@ public class RelauncherConfiguration {
                     updateStringElement(prop, v2ConfigJson, "args");
             }
         }
+        {
+            {
+                prop = v3Config.get("client", "language", (String) null,
+                        "The Language", Property.Type.STRING
+                );
+            }
+        }
         if (v3Config.hasChanged()) v3Config.save();
         forgedConfig = v3Config;
 
@@ -91,7 +98,6 @@ public class RelauncherConfiguration {
             }
         }
     }
-
     public static RelauncherConfiguration read() {
         return new RelauncherConfiguration();
     }
@@ -110,6 +116,10 @@ public class RelauncherConfiguration {
 
     public String getJavaArguments() {
         return forgedConfig.getCategory("java").get("args").getString();
+    }
+
+    public String getLanguage() {
+        return forgedConfig.getCategory("client").get("language").getString();
     }
 
     public void setCleanroomVersion(String cleanroomVersion) {
