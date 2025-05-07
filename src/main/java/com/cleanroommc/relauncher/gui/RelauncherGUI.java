@@ -6,6 +6,7 @@ import com.cleanroommc.javautils.spi.JavaLocator;
 import com.cleanroommc.platformutils.Platform;
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
+import com.cleanroommc.relauncher.util.FileDropTarget;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
 import javax.swing.*;
