@@ -2,16 +2,14 @@
 # Simple workflow with ignoring condition to prevent unneccessary build
 # To download artifact check on job task
 
-name: Build Retro
+name: Build
 
 on:
   push:
-    branches:
-        - 'NilLoader'
 
 jobs:
   build:
-    name: Build Retro NilLoader
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
