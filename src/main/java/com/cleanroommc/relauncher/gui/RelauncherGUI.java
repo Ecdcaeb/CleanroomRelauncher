@@ -176,6 +176,15 @@ public class RelauncherGUI extends JDialog {
         });
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.setAlwaysOnTop(true);
+        new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, new FileDropTarget(
+                (file) -> file.isFile() && (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")),
+                files -> {
+                    if (!files.isEmpty()) {
+                        File file = files.getFirst();
+                        CleanroomRelease.Snapshot snapshot = new CleanroomRelease.Snapshot(file);
+                        eligibleReleases.add(snapshot);
+                    }
+            }), true);
 
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice screen = env.getDefaultScreenDevice();

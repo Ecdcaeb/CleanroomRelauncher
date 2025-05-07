@@ -165,6 +165,10 @@ public class CleanroomRelauncher {
             }
         }
 
+        if (javaArgs != null && !javaArgs.isEmpty()) {
+            arguments.add(javaArgs);
+        }
+
         arguments.add("-Djava.library.path=" + versions.stream().map(version -> version.nativesPaths).flatMap(Collection::stream).collect(Collectors.joining(File.pathSeparator)));
 
         arguments.add("com.cleanroommc.relauncher.wrapper.RelaunchMainWrapperV2");
