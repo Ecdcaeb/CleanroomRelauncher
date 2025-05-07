@@ -134,8 +134,8 @@ public class CleanroomRelease {
         public Asset(File file) {
             try {
                 this.name = file.getName();
-                this.urlString = file.toURI().toURL().toString();
-                this.fileSize = file.length();
+                this.downloadUrl = file.toURI().toURL().toString();
+                this.size = file.length();
             } catch (Throwable e) {
                 throw new RuntimeException("Unable to create a asset from a file.", e);
             }
@@ -144,14 +144,22 @@ public class CleanroomRelease {
     }
 
     public static class Snapshot extends CleanroomRelease {
+        private static final Path SNAOSHOT_CACHE = CleanroomRelauncher.CACHE_DIR.resolve("snapshots/");
         // MMC.zip, or installer.jar
         private File artifact;
         
         private Snapshot(File artifact) {
+            Path sourcePath = artifact.toPath();
+            Path targetPath = Paths.get(targetDirectoryPath, artifact.getName());
+            if (!Files.exists) {
+                Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            }
             this.name = artifact.getName();
             this.tagName = artifact.getName();
             this.assets = new ArrayList();
-            assets.add(new Asset(artifact));
+            Asset ass = new Asset(artifact)
+            ass.downloadUrl = targetPath.toURI().toURL().toString();
+            assets.add(ass);
         }
     }
 
