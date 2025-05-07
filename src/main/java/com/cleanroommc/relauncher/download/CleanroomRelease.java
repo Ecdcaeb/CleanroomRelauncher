@@ -3,6 +3,7 @@ package com.cleanroommc.relauncher.download;
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CleanroomRelease {
@@ -121,6 +123,36 @@ public class CleanroomRelease {
         public String downloadUrl;
         public long size;
 
+        public Asset(){}
+
+        public Asset(String name, String url, long size) {
+            this.name = name;
+            this.url = url;
+            this.size = size;
+        }
+
+        public Asset(File file) {
+            try {
+                this.name = file.getName();
+                this.urlString = file.toURI().toURL().toString();
+                this.fileSize = file.length();
+            } catch (Throwable e) {
+                throw new RuntimeException("Unable to create a asset from a file.", e);
+            }
+        }
+
+    }
+
+    public static class Snapshot extends CleanroomRelease {
+        // MMC.zip, or installer.jar
+        private File artifact;
+        
+        private Snapshot(File artifact) {
+            this.name = artifact.getName();
+            this.tagName = artifact.getName();
+            this.assets = new ArrayList();
+            assets.add(new Asset(artifact));
+        }
     }
 
 }
