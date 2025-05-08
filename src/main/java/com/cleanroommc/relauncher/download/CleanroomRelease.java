@@ -157,7 +157,7 @@ public class CleanroomRelease {
             this.name = artifact.getName();
             this.tagName = artifact.getName();
             this.assets = new ArrayList();
-            Asset ass = new Asset(artifact)
+            Asset ass = new Asset(artifact);
             ass.downloadUrl = targetPath.toURI().toURL().toString();
             assets.add(ass);
         }
