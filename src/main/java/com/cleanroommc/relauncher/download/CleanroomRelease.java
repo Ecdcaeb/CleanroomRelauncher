@@ -151,20 +151,22 @@ public class CleanroomRelease {
         private File artifact;
         
         private Snapshot(File artifact) {
-            Path sourcePath = artifact.toPath();
-            Path targetPath = Paths.get(SNAOSHOT_CACHE.toString(), artifact.getName());
-            if (!Files.exists(targetPath)) {
-                Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
-            }
-            this.name = artifact.getName();
-            this.tagName = artifact.getName();
-            this.assets = new ArrayList();
-            Asset ass = new Asset(artifact);
+        
             try{
+                Path sourcePath = artifact.toPath();
+                Path targetPath = Paths.get(SNAOSHOT_CACHE.toString(), artifact.getName());
+                if (!Files.exists(targetPath)) {
+                    Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                }
+                this.name = artifact.getName();
+                this.tagName = artifact.getName();
+                this.assets = new ArrayList();
+                Asset ass = new Asset(artifact);
                 ass.downloadUrl = targetPath.toUri().toURL().toString();
+                assets.add(ass);
             } catch (Throwable t) {
+                throw new RuntimeException(t);
             }
-            assets.add(ass);
         }
 
         public static Snapshot of(File file) {
