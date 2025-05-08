@@ -185,7 +185,6 @@ public class RelauncherGUI extends JDialog {
                         CleanroomRelease.Snapshot snapshot = new CleanroomRelease.Snapshot(file);
                         eligibleReleases.add(snapshot);
                     }}), true);
-
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice screen = env.getDefaultScreenDevice();
         Rectangle rect = screen.getDefaultConfiguration().getBounds();
