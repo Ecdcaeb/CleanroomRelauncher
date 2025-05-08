@@ -163,7 +163,6 @@ public class CleanroomRelease {
             try{
                 ass.downloadUrl = targetPath.toUri().toURL().toString();
             } catch (Throwable t) {
-                throw new RuntimeException("Unable to create a asset from a path.", e);
             }
             assets.add(ass);
         }
