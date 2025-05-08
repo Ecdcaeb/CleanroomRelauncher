@@ -1,5 +1,7 @@
 package com.cleanroommc.relauncher.util;
 
+import com.cleanroommc.relauncher.CleanroomRelauncher;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
