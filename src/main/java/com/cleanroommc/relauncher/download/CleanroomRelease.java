@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,7 +128,7 @@ public class CleanroomRelease {
 
         public Asset(String name, String url, long size) {
             this.name = name;
-            this.url = url;
+            this.downloadUrl = url;
             this.size = size;
         }
 
@@ -150,16 +151,20 @@ public class CleanroomRelease {
         
         private Snapshot(File artifact) {
             Path sourcePath = artifact.toPath();
-            Path targetPath = Paths.get(targetDirectoryPath, artifact.getName());
-            if (!Files.exists) {
+            Path targetPath = Paths.get(SNAOSHOT_CACHE, artifact.getName());
+            if (!Files.exists(targetPath)) {
                 Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
             }
             this.name = artifact.getName();
             this.tagName = artifact.getName();
             this.assets = new ArrayList();
             Asset ass = new Asset(artifact);
-            ass.downloadUrl = targetPath.toURI().toURL().toString();
+            ass.downloadUrl = targetPath.toUri().toURL().toString();
             assets.add(ass);
+        }
+
+        public static Snapshot of(File file) {
+            return new Snapshot(file);
         }
     }
 

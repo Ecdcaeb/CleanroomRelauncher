@@ -47,7 +47,7 @@ public class FileDropTarget implements DropTargetListener {
                     }
                 }
             } catch (UnsupportedFlavorException | IOException ex) {
-                Logger.info(ex);
+                CleanroomRelauncher.LOGGER.info(ex);
             }
         }
         if (drop) {

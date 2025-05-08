@@ -17,6 +17,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
@@ -181,8 +183,8 @@ public class RelauncherGUI extends JDialog {
                 (file) -> file.isFile() && (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")),
                 files -> {
                     if (!files.isEmpty()) {
-                        File file = files.getFirst();
-                        CleanroomRelease.Snapshot snapshot = new CleanroomRelease.Snapshot(file);
+                        File file = files.get(0);
+                        CleanroomRelease.Snapshot snapshot = CleanroomRelease.Snapshot.of(file);
                         eligibleReleases.add(snapshot);
                     }}), true);
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
