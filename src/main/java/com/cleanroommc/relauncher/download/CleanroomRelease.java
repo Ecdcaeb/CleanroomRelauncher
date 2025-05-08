@@ -152,7 +152,7 @@ public class CleanroomRelease {
         
         private Snapshot(File artifact) {
             Path sourcePath = artifact.toPath();
-            Path targetPath = Paths.get(SNAOSHOT_CACHE, artifact.getName());
+            Path targetPath = Paths.get(SNAOSHOT_CACHE.toString(), artifact.getName());
             if (!Files.exists(targetPath)) {
                 Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
             }
