@@ -44,7 +44,7 @@ public class RelauncherConfiguration {
         Property prop;
         { // cleanroom
             { // selectedVersion
-                prop = v3Config.get("cleanroom", "selectedVersion", (String) null,
+                prop = v3Config.get("cleanroom", "selectedVersion", "",
                         "The selected version of Cleanroom to relaunch", Property.Type.STRING
                 );
                 // update v2
@@ -52,7 +52,7 @@ public class RelauncherConfiguration {
                     updateStringElement(prop, v2ConfigJson, "selectedVersion");
             }
             {
-                prop = v3Config.get("cleanroom", "latestVersion", (String) null,
+                prop = v3Config.get("cleanroom", "latestVersion", "",
                         "The latest version of Cleanroom", Property.Type.STRING
                 );
                 if (v2ConfigJson != null)
@@ -61,14 +61,14 @@ public class RelauncherConfiguration {
         }
         {
             {
-                prop = v3Config.get("java", "javaPath", (String) null,
+                prop = v3Config.get("java", "javaPath", "",
                         "The path of the java executable", Property.Type.STRING
                 );
                 if (v2ConfigJson != null)
                     updateStringElement(prop, v2ConfigJson, "javaPath");
             }
             {
-                prop = v3Config.get("java", "args", (String) null,
+                prop = v3Config.get("java", "args", "",
                         "The java arguments", Property.Type.STRING
                 );
                 if (v2ConfigJson != null)
@@ -96,20 +96,24 @@ public class RelauncherConfiguration {
         return new RelauncherConfiguration();
     }
 
+    private static String nullable(String str) {
+        return str == null || str.isEmpty() ? null : str;
+    }
+
     public String getCleanroomVersion() {
-        return forgedConfig.getCategory("cleanroom").get("selectedVersion").getString();
+        return nullable(forgedConfig.getCategory("cleanroom").get("selectedVersion").getString());
     }
 
     public String getLatestCleanroomVersion() {
-        return forgedConfig.getCategory("cleanroom").get("latestVersion").getString();
+        return nullable(forgedConfig.getCategory("cleanroom").get("latestVersion").getString());
     }
 
     public String getJavaExecutablePath() {
-        return forgedConfig.getCategory("java").get("javaPath").getString();
+        return nullable(forgedConfig.getCategory("java").get("javaPath").getString());
     }
 
     public String getJavaArguments() {
-        return forgedConfig.getCategory("java").get("args").getString();
+        return nullable(forgedConfig.getCategory("java").get("args").getString());
     }
 
     public void setCleanroomVersion(String cleanroomVersion) {
