@@ -160,7 +160,11 @@ public class CleanroomRelease {
             this.tagName = artifact.getName();
             this.assets = new ArrayList();
             Asset ass = new Asset(artifact);
-            ass.downloadUrl = targetPath.toUri().toURL().toString();
+            try{
+                ass.downloadUrl = targetPath.toUri().toURL().toString();
+            } catch (Throwable t) {
+                throw new RuntimeException("Unable to create a asset from a path.", e);
+            }
             assets.add(ass);
         }
 
