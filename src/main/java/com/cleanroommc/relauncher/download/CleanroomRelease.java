@@ -84,7 +84,7 @@ public class CleanroomRelease {
      *
      * @throws RuntimeException if an {@link IOException} occurs while writing to the file.
      */
-    private static void saveReleasesToCache(Path releaseFile, List<CleanroomRelease> releases) {
+    public static void saveReleasesToCache(Path releaseFile, List<CleanroomRelease> releases) {
         releaseFile.toFile().getParentFile().mkdirs();
         try (Writer writer = Files.newBufferedWriter(releaseFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             CleanroomRelauncher.GSON.toJson(releases, writer);
