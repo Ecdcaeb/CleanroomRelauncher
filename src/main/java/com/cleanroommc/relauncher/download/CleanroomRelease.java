@@ -21,7 +21,7 @@ import java.util.List;
 
 public class CleanroomRelease {
 
-    private static final Path CACHE_FILE = CleanroomRelauncher.CACHE_DIR.resolve("releases.json");
+    public static final Path CACHE_FILE = CleanroomRelauncher.CACHE_DIR.resolve("releases.json");
 
     public static List<CleanroomRelease> queryAll() throws IOException {
         // Check if the cache file exists and is not outdated

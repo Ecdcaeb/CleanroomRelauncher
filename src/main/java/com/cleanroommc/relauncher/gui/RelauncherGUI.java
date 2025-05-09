@@ -235,7 +235,7 @@ public class RelauncherGUI extends JDialog {
                     File file = files.get(0);
                     CleanroomRelease.Snapshot snapshot = CleanroomRelease.Snapshot.of(file);
                     eligibleReleases.add(snapshot);
-                    cleanroomPickerPanel.update(eligibleReleases);
+                    cleanroomPickerPanel.updateReleases(eligibleReleases);
                     CleanroomRelease.saveReleasesToCache(CleanroomRelease.CACHE_FILE, eligibleReleases);
                 }}), true);
     }
