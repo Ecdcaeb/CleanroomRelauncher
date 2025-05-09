@@ -193,7 +193,7 @@ public class RelauncherGUI extends JDialog {
 
         JLabel cleanroomLogo = new JLabel(new ImageIcon(frame.getIconImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
 
-        CleanroomPickerPanel cleanroomPickerPanel = new CleanroomPickerPanel();
+        CleanroomPickerPanel cleanroomPickerPanel = new CleanroomPickerPanel(eligibleReleases);
         mainPanel.add(cleanroomPickerPanel);
 
         JPanel javaPickerPanel = this.initializeJavaPicker();
