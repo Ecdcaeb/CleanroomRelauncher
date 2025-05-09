@@ -152,6 +152,8 @@ public class RelauncherGUI extends JDialog {
 
     private JFrame frame;
 
+    private 
+
     private RelauncherGUI(SupportingFrame frame, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         super(frame, frame.getTitle(), true);
         this.frame = frame;
@@ -177,6 +179,7 @@ public class RelauncherGUI extends JDialog {
                 ExitVMBypass.exit(0);
             }
         });
+
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.setAlwaysOnTop(true);
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -195,6 +198,17 @@ public class RelauncherGUI extends JDialog {
 
         CleanroomPickerPanel cleanroomPickerPanel = new CleanroomPickerPanel(eligibleReleases);
         mainPanel.add(cleanroomPickerPanel);
+
+                new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, new FileDropTarget(
+            (file) -> file.isFile() && (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")),
+            files -> {
+                if (!files.isEmpty()) {
+                    File file = files.get(0);
+                    CleanroomRelease.Snapshot snapshot = CleanroomRelease.Snapshot.of(file);
+                    eligibleReleases.add(snapshot);
+                    cleanroomPickerPanel.updateReleases(eligibleReleases);
+                    CleanroomRelease.saveReleasesToCache(CleanroomRelease.CACHE_FILE, eligibleReleases);
+                }}), true);
 
         JPanel javaPickerPanel = this.initializeJavaPicker();
         mainPanel.add(javaPickerPanel);
@@ -227,17 +241,6 @@ public class RelauncherGUI extends JDialog {
         this.setSize(width, height);
         this.setVisible(true);
         this.setAutoRequestFocus(true);
-
-        new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, new FileDropTarget(
-            (file) -> file.isFile() && (file.getName().endsWith(".jar") || file.getName().endsWith(".zip")),
-            files -> {
-                if (!files.isEmpty()) {
-                    File file = files.get(0);
-                    CleanroomRelease.Snapshot snapshot = CleanroomRelease.Snapshot.of(file);
-                    eligibleReleases.add(snapshot);
-                    cleanroomPickerPanel.updateReleases(eligibleReleases);
-                    CleanroomRelease.saveReleasesToCache(CleanroomRelease.CACHE_FILE, eligibleReleases);
-                }}), true);
     }
 
     private class CleanroomPickerPanel extends JPanel {
