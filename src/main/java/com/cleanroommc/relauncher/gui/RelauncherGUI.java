@@ -292,7 +292,7 @@ public class RelauncherGUI extends JDialog {
         public void updateReleases(List<CleanroomRelease> eligibleReleases) {
             CleanroomPickerPanel.this.releasesList.removeAllElements();
             for (CleanroomRelease release : eligibleReleases) {
-                CleanroomPickerPanel.this.releasesList..addElement(release);
+                CleanroomPickerPanel.this.releasesList.addElement(release);
             }
         }
 
