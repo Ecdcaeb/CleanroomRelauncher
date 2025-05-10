@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.lang.ref.WeakReference;
 
 public class RelauncherGUI extends JDialog {
 
@@ -153,7 +154,7 @@ public class RelauncherGUI extends JDialog {
 
     private JFrame frame;
 
-    private WeakList<Runnable> updatables = WeakList.create();
+    private final List<WeakReference<Runnable>> updateElements = new ArrayList<>();
 
     private RelauncherGUI(SupportingFrame frame, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         super(frame, frame.getTitle(), true);
@@ -234,7 +235,19 @@ public class RelauncherGUI extends JDialog {
     }
 
     private void updateUI(){
-        Lists.newArrayList(this.updatables).forEach(Runnable::run);
+        Iterator<WeakReference<Runnable>> iterator = runnableReferences.iterator();
+        while (iterator.hasNext()) {
+            WeakReference<Runnable> ref = iterator.next();
+            Runnable runnable = ref.get();
+            if (runnable != null) {
+                try {
+                    runnable.run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+            }
+        }
     }
 
     private JPanel initializeCleanroomPicker(List<CleanroomRelease> eligibleReleases) {
@@ -469,8 +482,8 @@ public class RelauncherGUI extends JDialog {
         langPicker.add(dropdown);
 
         // Create the dropdown with languages
-        JComboBox<Language> langBox = new JComboBox<>();
-        DefaultComboBoxModel<Language> langModel = new DefaultComboBoxModel<>();
+        JComboBox<Map.Entry<String, String>> langBox = new JComboBox<>();
+        DefaultComboBoxModel<Map.Entry<String, String>> langModel = new DefaultComboBoxModel<>();
         for (Map.Entry<String, String> lang : I18n.getLocales().entrySet()) {
             langModel.addElement(lang);
         }
@@ -543,15 +556,21 @@ public class RelauncherGUI extends JDialog {
         return relaunchButtonPanel;
     }
 
+    public void updateElement(Runnable runnable) {
+        if (runnable != null) {
+            updateElements.add(new WeakReference<>(runnable));
+        }
+    }
+
     public JButton newJButton(String key) {
         JButton jButton = new JButton(I18n.format(key));
-        RelauncherGUI.this.updatables.add(()->jButton.setText(I18n.format(key)));
+        updateElement(()->jButton.setText(I18n.format(key)));
         return jButton;
     }
 
     public JLabel newJLabel(String key) {
         JLabel jButton = new JLabel(I18n.format(key));
-        RelauncherGUI.this.updatables.add(()->jButton.setText(I18n.format(key)));
+        updateElement(()->jButton.setText(I18n.format(key)));
         return jButton;
     }
 

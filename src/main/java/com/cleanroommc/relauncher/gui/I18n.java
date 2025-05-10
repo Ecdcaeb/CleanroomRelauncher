@@ -19,7 +19,7 @@ public class I18n {
     private static Map<String, String> locales = new HashMap<>();
 
     public static void load(String lang) {
-        try (InputStream stream = LangUtil.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/en_us.json")){
+        try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/en_us.json")){
             for(Map.Entry<String, JsonElement> entry : JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                 locales.put(entry.getKey(), entry.getValue().getAsString());
             }
@@ -27,7 +27,7 @@ public class I18n {
             
         }
         if (!"en_us".equals(lang)) {
-            try (InputStream stream = LangUtil.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/" + lang + ".json")){
+            try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/" + lang + ".json")){
                 for(Map.Entry<String, JsonElement> entry : JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                     locales.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
                 }
@@ -44,8 +44,8 @@ public class I18n {
     }
 
     // lang key - lang name
-    public static Map.Entry<String, String> getLocales() {
-        try (InputStream stream = LangUtil.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/locales.json")) {
+    public static Map<String, String> getLocales() {
+        try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/locales.json")) {
             HashMap<String, String> map = new HashMap<>();
             for(Map.Entry<String, JsonElement> entry : JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                 map.put(entry.getKey(), entry.getValue().getAsString());
@@ -54,7 +54,7 @@ public class I18n {
         } catch (IOException | NullPointerException e) {
             
         }
-        return Collections.emptyList();
+        return new HashMap<>();
     }
 
     static {
