@@ -8,10 +8,6 @@ import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.WeakList;
-
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.Border;

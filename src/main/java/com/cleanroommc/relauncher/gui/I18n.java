@@ -47,7 +47,7 @@ public class I18n {
     public static Map<String, String> getLocales() {
         try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/locales.json")) {
             HashMap<String, String> map = new HashMap<>();
-            for(Map.Entry<String, JsonElement> entry : JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
+            for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                 map.put(entry.getKey(), entry.getValue().getAsString());
             }
             return map;
