@@ -8,6 +8,7 @@
     "gui.javaPicker.testJava": "Test",
     "gui.javaPicker.fileFilter": "Java Executable",
     "gui.javaPicker.fileFilter.windows":"Java Executable (*.exe)",
+    "gui.langPicker.selectedLanguage": "Selected Language",
     "gui.notice.cleanroomNotSelected.title" : "Cleanroom Release Not Selected",
     "gui.notice.cleanroomNotSelected.dialog" : "Please select a Cleanroom version in order to relaunch.",
     "gui.notice.javaNotSelected.title" : "Java Executable Not Selected",

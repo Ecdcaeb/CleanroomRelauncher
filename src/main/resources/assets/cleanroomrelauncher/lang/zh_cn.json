@@ -8,6 +8,7 @@
     "gui.javaPicker.testJava": "测试 Java",
     "gui.javaPicker.fileFilter": "Java 可执行程序",
     "gui.javaPicker.fileFilter.windows":"Java 可执行程序 (*.exe)",
+    "gui.langPicker.selectedLanguage": "语言",
     "gui.notice.cleanroomNotSelected.title" : "未选择 Cleanroom 版本",
     "gui.notice.cleanroomNotSelected.dialog" : "请先选择需要启动的洁净室版本。",
     "gui.notice.javaNotSelected.title" : "未指定 Java 执行程序",

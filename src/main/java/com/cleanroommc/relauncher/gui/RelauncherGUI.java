@@ -336,23 +336,6 @@ public class RelauncherGUI extends JDialog {
         options.add(autoDetect);
         options.add(test);
 
-        // Lang Panel
-        JComboBox<String> langCombo = new JComboBox<>();
-        DefaultComboBoxModel<String> langModel = new DefaultComboBoxModel<>();
-        for (String lang : I18n.getLocales()) {
-            langModel.addElement(lang);
-        }
-        langCombo.setModel(langModel);
-        langCombo.setSelectedIndex(0);
-         FontMetrics fm = langCombo.getFontMetrics(langCombo.getFont());
-        int buttonHeight = fm.getHeight() + 12; // 按钮高度 = 字体高度 + 边距
-        langCombo.setPreferredSize(new Dimension(200, buttonHeight));
-        langCombo.setMaximumSize(langCombo.getPreferredSize());
-        options.add(langCombo);
-        langCombo.addActionListener(e -> {
-            I18n.load((String) langCombo.getSelectedItem())
-        });
-
         listenToTextFieldUpdate(text, t -> javaPath = t.getText());
         addTextBoxEffect(text);
 
@@ -459,8 +442,49 @@ public class RelauncherGUI extends JDialog {
         return javaPicker;
     }
 
-    private JPanel initializeLanguagePicker() {
-        
+    private JPanel initializeLangPicker() {
+        // Main Panel
+        JPanel langPicker = new JPanel();
+        langPicker.setLayout(new BoxLayout(langPicker, BoxLayout.Y_AXIS));
+        langPicker.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JLabel title = new JLabel(I18n.format("gui.langPicker.selectedLanguage"));
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        langPicker.add(title);
+        langPicker.add(Box.createRigidArea(new Dimension(0, 5)));
+
+        JPanel dropdown = new JPanel();
+        dropdown.setLayout(new BoxLayout(dropdown, BoxLayout.X_AXIS));
+        dropdown.setAlignmentX(Component.LEFT_ALIGNMENT);
+        langPicker.add(dropdown);
+
+        // Create the dropdown with languages
+        JComboBox<Language> langBox = new JComboBox<>();
+        DefaultComboBoxModel<Language> langModel = new DefaultComboBoxModel<>();
+        for (Map.Entry<String, String> lang : I18n.getLocales().entrySet()) {
+            langModel.addElement(lang);
+        }
+        langBox.setModel(langModel);
+        langBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setText((Map.Entry<String, String> value).getValue());
+                return this;
+            }
+        });
+        langBox.setSelectedItem(selectedLanguage);
+        langBox.setMaximumRowCount(5);
+        langBox.addActionListener(e -> {
+            Map.Entry<String, String> selectedLanguage = (Map.Entry<String, String>) langBox.getSelectedItem();
+            if (selectedLanguage != null) {
+                I18n.load(selectedLanguage.getKey());
+                //refreshUI();
+            }
+        });
+        dropdown.add(langBox);
+
+        return langPicker;
     }
 
     private JPanel initializeArgsPanel() {
@@ -503,6 +527,8 @@ public class RelauncherGUI extends JDialog {
             frame.dispose();
         });
         relaunchButtonPanel.add(relaunchButton);
+
+        relaunchButtonPanel.add(initializeLangPicker());
 
         return relaunchButtonPanel;
     }

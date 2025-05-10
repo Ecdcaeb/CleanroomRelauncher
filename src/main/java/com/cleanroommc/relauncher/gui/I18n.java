@@ -43,14 +43,14 @@ public class I18n {
         } else return key;
     }
 
-    public static List<String> getLocales() {
-        try (InputStream stream = LangUtil.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/locales.json") {
-            JsonArray array = JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream)));
-            ArrayList<String> list = new ArrayList<>(array.size());
-            for (JsonElement e : array) {
-                list.add(e.getAsString());
+    // lang key - lang name
+    public static Map.Entry<String, String> getLocales() {
+        try (InputStream stream = LangUtil.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/locales.json")) {
+            HashMap<String, String> map = new HashMap<>();
+            for(Map.Entry<String, JsonElement> entry : JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
+                map.put(entry.getKey(), entry.getValue().getAsString());
             }
-            return array;
+            return map;
         } catch (IOException | NullPointerException e) {
             
         }
@@ -60,6 +60,6 @@ public class I18n {
     static {
         Locale locale = Locale.getDefault();
         String lang = locale.getLanguage().toLowerCase() + "_" + locale.getCountry().toLowerCase();
-        load(CleanroomRelauncher.CON);
+        load(lang);
     }
 }
