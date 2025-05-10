@@ -8,6 +8,10 @@ import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.cleanroommc.relauncher.download.CleanroomRelease;
 import net.minecraftforge.fml.cleanroomrelauncher.ExitVMBypass;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.WeakList;
+
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.Border;
@@ -149,6 +153,8 @@ public class RelauncherGUI extends JDialog {
 
     private JFrame frame;
 
+    private WeakList<Runnable> updatables = WeakList.create();
+
     private RelauncherGUI(SupportingFrame frame, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         super(frame, frame.getTitle(), true);
         this.frame = frame;
@@ -227,6 +233,10 @@ public class RelauncherGUI extends JDialog {
         this.setAutoRequestFocus(true);
     }
 
+    private void updateUI(){
+        Lists.newArrayList(this.updatables).forEach(Runnable::run);
+    }
+
     private JPanel initializeCleanroomPicker(List<CleanroomRelease> eligibleReleases) {
         // Main Panel
         JPanel cleanroomPicker = new JPanel(new BorderLayout(5, 0));
@@ -237,7 +247,7 @@ public class RelauncherGUI extends JDialog {
         cleanroomPicker.add(select);
 
         // Title label
-        JLabel title = new JLabel(I18n.format("gui.cleanroomPicker.selectedVersion"));
+        JLabel title = newJLabel("gui.cleanroomPicker.selectedVersion");
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
         select.add(title);
         select.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -281,7 +291,7 @@ public class RelauncherGUI extends JDialog {
         JPanel selectPanel = new JPanel(new BorderLayout(5, 5));
         selectPanel.setLayout(new BoxLayout(selectPanel, BoxLayout.Y_AXIS));
         JPanel subSelectPanel = new JPanel(new BorderLayout(5, 5));
-        JLabel title = new JLabel(I18n.format("gui.javaPicker.selectJavaExecutable"));
+        JLabel title = newJLabel("gui.javaPicker.selectJavaExecutable");
         JTextField text = new JTextField(100);
         text.setText(javaPath);
         JPanel northPanel = new JPanel();
@@ -331,8 +341,8 @@ public class RelauncherGUI extends JDialog {
         options.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         selectPanel.add(options);
         // JButton download = new JButton("Download");
-        JButton autoDetect = new JButton(I18n.format("gui.javaPicker.autoDetect"));
-        JButton test = new JButton(I18n.format("gui.javaPicker.testJava"));
+        JButton autoDetect = newJButton("gui.javaPicker.autoDetect");
+        JButton test = newJButton("gui.javaPicker.testJava");
         options.add(autoDetect);
         options.add(test);
 
@@ -384,7 +394,7 @@ public class RelauncherGUI extends JDialog {
                 JOptionPane.showMessageDialog(this, I18n.format("gui.notice.javaInvalid.dialog"), I18n.format("gui.notice.javaInvalid.title"), JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            JDialog testing = new JDialog(this, "Testing Java Executable", true);
+            JDialog testing = new JDialog(this, I18n.format("gui.javaPicker.testingJava"), true);
             testing.setLocationRelativeTo(this);
 
             this.testJava();
@@ -392,7 +402,7 @@ public class RelauncherGUI extends JDialog {
 
         autoDetect.addActionListener(e -> {
             String original = autoDetect.getText();
-            autoDetect.setText("Detecting");
+            autoDetect.setText(I18n.format("gui.javaPicker.detectingJava"));
             autoDetect.setEnabled(false);
 
             AtomicInteger dotI = new AtomicInteger(0);
@@ -448,7 +458,7 @@ public class RelauncherGUI extends JDialog {
         langPicker.setLayout(new BoxLayout(langPicker, BoxLayout.Y_AXIS));
         langPicker.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel title = new JLabel(I18n.format("gui.langPicker.selectedLanguage"));
+        JLabel title = newJLabel("gui.langPicker.selectedLanguage");
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
         langPicker.add(title);
         langPicker.add(Box.createRigidArea(new Dimension(0, 5)));
@@ -479,7 +489,7 @@ public class RelauncherGUI extends JDialog {
             Map.Entry<String, String> selectedLanguage = (Map.Entry<String, String>) langBox.getSelectedItem();
             if (selectedLanguage != null) {
                 I18n.load(selectedLanguage.getKey());
-                //refreshUI();
+                RelauncherGUI.this.updateUI();
             }
         });
         dropdown.add(langBox);
@@ -492,7 +502,7 @@ public class RelauncherGUI extends JDialog {
         JPanel argsPanel = new JPanel(new BorderLayout(0, 0));
         argsPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-        JLabel title = new JLabel("Add Java Arguments:");
+        JLabel title = newJLabel("gui.javaarg.add");
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
         JTextField text = new JTextField(100);
         text.setText(javaArgs);
@@ -508,7 +518,7 @@ public class RelauncherGUI extends JDialog {
     private JPanel initializeRelaunchPanel() {
         JPanel relaunchButtonPanel = new JPanel();
 
-        JButton relaunchButton = new JButton("Relaunch with Cleanroom");
+        JButton relaunchButton = newJButton("gui.relauncher.relaunch"));
         relaunchButtonPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         relaunchButton.addActionListener(e -> {
             if (selected == null) {
@@ -531,6 +541,18 @@ public class RelauncherGUI extends JDialog {
         relaunchButtonPanel.add(initializeLangPicker());
 
         return relaunchButtonPanel;
+    }
+
+    public JButton newJButton(String key) {
+        JButton jButton = new JButton(I18n.format(key));
+        RelauncherGUI.this.updatables.add(()->jButton.setText(I18n.format(key)));
+        return jButton;
+    }
+
+    public JLabel newJLabel(String key) {
+        JLabel jButton = new JLabel(I18n.format(key));
+        RelauncherGUI.this.updatables.add(()->jButton.setText(I18n.format(key)));
+        return jButton;
     }
 
     private void listenToTextFieldUpdate(JTextField text, Consumer<JTextField> textConsumer) {
