@@ -235,7 +235,7 @@ public class RelauncherGUI extends JDialog {
     }
 
     private void updateUI(){
-        Iterator<WeakReference<Runnable>> iterator = runnableReferences.iterator();
+        Iterator<WeakReference<Runnable>> iterator = updateElements.iterator();
         while (iterator.hasNext()) {
             WeakReference<Runnable> ref = iterator.next();
             Runnable runnable = ref.get();
@@ -484,7 +484,8 @@ public class RelauncherGUI extends JDialog {
         // Create the dropdown with languages
         JComboBox<Map.Entry<String, String>> langBox = new JComboBox<>();
         DefaultComboBoxModel<Map.Entry<String, String>> langModel = new DefaultComboBoxModel<>();
-        for (Map.Entry<String, String> lang : I18n.getLocales().entrySet()) {
+        Set<Map.Entry<String, String>> langs = I18n.getLocales().entrySet();
+        for (Map.Entry<String, String> lang : langs) {
             langModel.addElement(lang);
         }
         langBox.setModel(langModel);
@@ -496,7 +497,7 @@ public class RelauncherGUI extends JDialog {
                 return this;
             }
         });
-        langBox.setSelectedItem(selectedLanguage);
+        langBox.setSelectedItem(langs.iterator().next());
         langBox.setMaximumRowCount(5);
         langBox.addActionListener(e -> {
             Map.Entry<String, String> selectedLanguage = (Map.Entry<String, String>) langBox.getSelectedItem();

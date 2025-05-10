@@ -20,7 +20,7 @@ public class I18n {
 
     public static void load(String lang) {
         try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/en_us.json")){
-            for(Map.Entry<String, JsonElement> entry : JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
+            for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                 locales.put(entry.getKey(), entry.getValue().getAsString());
             }
         } catch (IOException | NullPointerException e) {
@@ -28,7 +28,7 @@ public class I18n {
         }
         if (!"en_us".equals(lang)) {
             try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/" + lang + ".json")){
-                for(Map.Entry<String, JsonElement> entry : JsonParser.parseReader(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
+                for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                     locales.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
                 }
             } catch (IOException | NullPointerException e) {
@@ -38,8 +38,8 @@ public class I18n {
     }
 
     public static String format(String key, Object... args) {
-        if (locales.getValue().containsKey(key)) {
-            return String.format(locales.getValue().get(key), args);
+        if (locales.containsKey(key)) {
+            return String.format(locales.get(key), args);
         } else return key;
     }
 
