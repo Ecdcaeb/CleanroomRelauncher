@@ -336,6 +336,23 @@ public class RelauncherGUI extends JDialog {
         options.add(autoDetect);
         options.add(test);
 
+        // Lang Panel
+        JComboBox<String> langCombo = new JComboBox<>();
+        DefaultComboBoxModel<String> langModel = new DefaultComboBoxModel<>();
+        for (String lang : I18n.getLocales()) {
+            langModel.addElement(lang);
+        }
+        langCombo.setModel(langModel);
+        langCombo.setSelectedIndex(0);
+         FontMetrics fm = langCombo.getFontMetrics(langCombo.getFont());
+        int buttonHeight = fm.getHeight() + 12; // 按钮高度 = 字体高度 + 边距
+        langCombo.setPreferredSize(new Dimension(200, buttonHeight));
+        langCombo.setMaximumSize(langCombo.getPreferredSize());
+        options.add(langCombo);
+        langCombo.addActionListener(e -> {
+            I18n.load((String) langCombo.getSelectedItem())
+        });
+
         listenToTextFieldUpdate(text, t -> javaPath = t.getText());
         addTextBoxEffect(text);
 
@@ -440,6 +457,10 @@ public class RelauncherGUI extends JDialog {
         });
 
         return javaPicker;
+    }
+
+    private JPanel initializeLanguagePicker() {
+        
     }
 
     private JPanel initializeArgsPanel() {
