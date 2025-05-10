@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class I18n {
-    private static Map<String, String> locales = = new HashMap<>();
+    private static Map<String, String> locales = new HashMap<>();
 
     public static void load(String lang) {
         try (InputStream stream = LangUtil.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/en_us.json")){
