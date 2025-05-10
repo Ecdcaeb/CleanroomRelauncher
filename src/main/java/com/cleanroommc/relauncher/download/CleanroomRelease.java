@@ -28,7 +28,9 @@ public class CleanroomRelease {
         if (Files.exists(CACHE_FILE)) {
             CleanroomRelauncher.LOGGER.info("Loading releases from cached releases.json");
             try {
-                return fetchReleasesFromCache(CACHE_FILE);
+                List<CleanroomRelease> releases = new ArrayList<>();
+                releases.addAll(fetchReleasesFromCache(CACHE_FILE));
+                return releases;
             } catch (IOException e) {
                 Files.deleteIfExists(CACHE_FILE);
                 CleanroomRelauncher.LOGGER.error("Unable to read cached releases.json, attempting to connect to GitHub and rebuild.", e);
