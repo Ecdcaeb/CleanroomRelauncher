@@ -155,6 +155,7 @@ public class CleanroomRelease {
             try{
                 Path sourcePath = artifact.toPath();
                 Path targetPath = Paths.get(SNAOSHOT_CACHE.toString(), artifact.getName());
+                Files.createDirectories(targetPath.getParent());
                 if (!Files.exists(targetPath)) {
                     Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
                 }
