@@ -35,7 +35,8 @@ public class CleanroomRelease {
             }
         }
         CleanroomRelauncher.LOGGER.info("No cache found, fetching releases...");
-        List<CleanroomRelease> releases = fetchReleasesFromGithub();
+        List<CleanroomRelease> releases = new ArrayList<>();
+        releases.addAll(fetchReleasesFromGithub());
 
         // After fetching releases, save them to the cache
         saveReleasesToCache(CACHE_FILE, releases);
