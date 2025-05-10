@@ -152,8 +152,6 @@ public class RelauncherGUI extends JDialog {
 
     private JFrame frame;
 
-    private 
-
     private RelauncherGUI(SupportingFrame frame, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         super(frame, frame.getTitle(), true);
         this.frame = frame;
@@ -179,7 +177,6 @@ public class RelauncherGUI extends JDialog {
                 ExitVMBypass.exit(0);
             }
         });
-
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.setAlwaysOnTop(true);
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
