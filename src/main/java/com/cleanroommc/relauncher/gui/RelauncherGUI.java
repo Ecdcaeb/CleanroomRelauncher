@@ -203,6 +203,9 @@ public class RelauncherGUI extends JDialog {
         JPanel argsPanel = this.initializeArgsPanel();
         mainPanel.add(argsPanel);
 
+        JPanel langPanel = this.initializeLangPicker();
+        mainPanel.add(langPanel);
+
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
         contentPanel.add(cleanroomLogo, BorderLayout.NORTH);
@@ -463,19 +466,23 @@ public class RelauncherGUI extends JDialog {
 
     private JPanel initializeLangPicker() {
         // Main Panel
-        JPanel langPicker = new JPanel();
-        langPicker.setLayout(new BoxLayout(langPicker, BoxLayout.Y_AXIS));
+        JPanel langPicker = new JPanel(new BorderLayout(5, 0));
         langPicker.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        JPanel select = new JPanel();
+        select.setLayout(new BoxLayout(select, BoxLayout.Y_AXIS));
+        langPicker.add(select);
+
+        // Title label
         JLabel title = newJLabel("gui.langPicker.selectedLanguage");
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
-        langPicker.add(title);
-        langPicker.add(Box.createRigidArea(new Dimension(0, 5)));
+        select.add(title);
+        select.add(Box.createRigidArea(new Dimension(0, 5)));
 
-        JPanel dropdown = new JPanel();
-        dropdown.setLayout(new BoxLayout(dropdown, BoxLayout.X_AXIS));
+        // Create dropdown panel
+        JPanel dropdown = new JPanel(new BorderLayout(5, 5));
         dropdown.setAlignmentX(Component.LEFT_ALIGNMENT);
-        langPicker.add(dropdown);
+        select.add(dropdown);
 
         // Create the dropdown with languages
         JComboBox<Map.Entry<String, String>> langBox = new JComboBox<>();
@@ -499,10 +506,10 @@ public class RelauncherGUI extends JDialog {
             Map.Entry<String, String> selectedLanguage = (Map.Entry<String, String>) langBox.getSelectedItem();
             if (selectedLanguage != null) {
                 I18n.load(selectedLanguage.getKey());
-                //RelauncherGUI.this.updateUI();
+                RelauncherGUI.this.updateUI();
             }
         });
-        dropdown.add(langBox);
+        dropdown.add(langBox, BorderLayout.CENTER);
 
         return langPicker;
     }
@@ -547,8 +554,6 @@ public class RelauncherGUI extends JDialog {
             frame.dispose();
         });
         relaunchButtonPanel.add(relaunchButton);
-
-        //relaunchButtonPanel.add(initializeLangPicker());
 
         return relaunchButtonPanel;
     }
