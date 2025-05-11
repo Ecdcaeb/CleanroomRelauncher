@@ -39,9 +39,9 @@ public class I18n {
 
         // load custom langs
         if (!"en_us".equals(lang)) {
-            try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/" + lang + ".json")){
+            try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/"+ lang +".json")){
                 for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
-                    locales.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
+                    locales.put(entry.getKey(), entry.getValue().getAsString());
                 }
             } catch (Throwable e) {
                 CleanroomRelauncher.LOGGER.error(e);
