@@ -498,7 +498,7 @@ public class RelauncherGUI extends JDialog {
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof String){
-                    setText(I18n.format(value));
+                    setText(I18n.format((String)value));
                 }
                 return this;
             }
