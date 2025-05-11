@@ -487,8 +487,7 @@ public class RelauncherGUI extends JDialog {
         // Create the dropdown with languages
         JComboBox<String> langBox = new JComboBox<>();
         DefaultComboBoxModel<String> langModel = new DefaultComboBoxModel<>();
-        List<String> langs = I18n.getLocales().entrySet();
-        for (String lang : langs) {
+        for (String lang : I18n.getLocales()) {
             langModel.addElement(lang);
         }
         langBox.setModel(langModel);
