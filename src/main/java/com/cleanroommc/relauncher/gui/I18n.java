@@ -7,31 +7,42 @@ import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class I18n {
     private static Map<String, String> locales = new HashMap<>();
+    private static List<String> langs = new ArrayList();
 
     public static void load(String lang) {
+        locales.clear();
+        langs.clear();
+
+        // load lang key and names
+        try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/locales.json")){
+            for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
+                locales.put(entry.getKey(), entry.getValue().getAsString());
+                langs.add(entry.getKey());
+            }
+        } catch (Throwable e) {
+            
+        }
+
+        // load en_us as default
         try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/en_us.json")){
             for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                 locales.put(entry.getKey(), entry.getValue().getAsString());
             }
-        } catch (IOException | NullPointerException e) {
+        } catch (Throwable e) {
             
         }
+
+        // load custom langs
         if (!"en_us".equals(lang)) {
             try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/" + lang + ".json")){
                 for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
                     locales.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
                 }
-            } catch (IOException | NullPointerException e) {
+            } catch (Throwable e) {
                 
             }
         }
@@ -44,22 +55,11 @@ public class I18n {
     }
 
     // lang key - lang name
-    public static Map<String, String> getLocales() {
-        try (InputStream stream = I18n.class.getResourceAsStream("/assets/cleanroomrelauncher/lang/locales.json")) {
-            HashMap<String, String> map = new HashMap<>();
-            for(Map.Entry<String, JsonElement> entry : new JsonParser().parse(new InputStreamReader(Objects.requireNonNull(stream))).getAsJsonObject().entrySet()) {
-                map.put(entry.getKey(), entry.getValue().getAsString());
-            }
-            return map;
-        } catch (IOException | NullPointerException e) {
-            
-        }
-        return new HashMap<>();
+    public static List<String> getLocales() {
+        return langs;
     }
 
     static {
-        Locale locale = Locale.getDefault();
-        String lang = locale.getLanguage().toLowerCase() + "_" + locale.getCountry().toLowerCase();
-        load(lang);
+        load("en_us");
     }
 }

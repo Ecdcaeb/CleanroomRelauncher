@@ -485,29 +485,29 @@ public class RelauncherGUI extends JDialog {
         select.add(dropdown);
 
         // Create the dropdown with languages
-        JComboBox<Map.Entry<String, String>> langBox = new JComboBox<>();
-        DefaultComboBoxModel<Map.Entry<String, String>> langModel = new DefaultComboBoxModel<>();
-        Set<Map.Entry<String, String>> langs = I18n.getLocales().entrySet();
-        for (Map.Entry<String, String> lang : langs) {
+        JComboBox<String> langBox = new JComboBox<>();
+        DefaultComboBoxModel<String> langModel = new DefaultComboBoxModel<>();
+        List<String> langs = I18n.getLocales().entrySet();
+        for (String lang : langs) {
             langModel.addElement(lang);
         }
         langBox.setModel(langModel);
+        langBox.setSelectedItem("en_us");
         langBox.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                setText(((Map.Entry<String, String>)value).getValue());
+                if (value instanceof String){
+                    setText(I18n.format(value));
+                }
                 return this;
             }
         });
-        if (!langs.isEmpty()) {
-            langBox.setSelectedItem(langs.iterator().next());
-        }
-        langBox.setMaximumRowCount(5);
+        
         langBox.addActionListener(e -> {
-            Map.Entry<String, String> selectedLanguage = (Map.Entry<String, String>) langBox.getSelectedItem();
+            String selectedLanguage = (String, String) langBox.getSelectedItem();
             if (selectedLanguage != null) {
-                I18n.load(selectedLanguage.getKey());
+                I18n.load(selectedLanguage);
                 RelauncherGUI.this.updateUI();
             }
         });
