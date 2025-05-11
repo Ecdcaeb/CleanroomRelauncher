@@ -505,7 +505,7 @@ public class RelauncherGUI extends JDialog {
         });
         
         langBox.addActionListener(e -> {
-            String selectedLanguage = (String, String) langBox.getSelectedItem();
+            String selectedLanguage = (String) langBox.getSelectedItem();
             if (selectedLanguage != null) {
                 I18n.load(selectedLanguage);
                 RelauncherGUI.this.updateUI();
