@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.lang.ref.WeakReference;
 
 public class RelauncherGUI extends JDialog {
 
@@ -150,7 +149,7 @@ public class RelauncherGUI extends JDialog {
 
     private JFrame frame;
 
-    private final List<WeakReference<Runnable>> updateElements = new ArrayList<>();
+    private final List<Runnable> updateElements = new ArrayList<>();
 
     private RelauncherGUI(SupportingFrame frame, List<CleanroomRelease> eligibleReleases, Consumer<RelauncherGUI> consumer) {
         super(frame, frame.getTitle(), true);
@@ -234,16 +233,13 @@ public class RelauncherGUI extends JDialog {
     }
 
     private void updateUI(){
-        Iterator<WeakReference<Runnable>> iterator = updateElements.iterator();
+        Iterator<Runnable> iterator = updateElements.iterator();
         while (iterator.hasNext()) {
-            WeakReference<Runnable> ref = iterator.next();
-            Runnable runnable = ref.get();
-            if (runnable != null) {
-                try {
-                    runnable.run();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            try {
+                iterator.next().run();
+            } catch (Exception e) {
+                e.printStackTrace();
+                
             }
         }
     }
@@ -560,7 +556,7 @@ public class RelauncherGUI extends JDialog {
 
     public void updateElement(Runnable runnable) {
         if (runnable != null) {
-            updateElements.add(new WeakReference<>(runnable));
+            updateElements.add(runnable);
         }
     }
 
