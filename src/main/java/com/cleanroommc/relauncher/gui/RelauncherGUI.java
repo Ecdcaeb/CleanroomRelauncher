@@ -548,7 +548,7 @@ public class RelauncherGUI extends JDialog {
         });
         relaunchButtonPanel.add(relaunchButton);
 
-        relaunchButtonPanel.add(initializeLangPicker());
+        //relaunchButtonPanel.add(initializeLangPicker());
 
         return relaunchButtonPanel;
     }
