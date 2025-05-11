@@ -203,9 +203,8 @@ public class RelauncherGUI extends JDialog {
         JPanel argsPanel = this.initializeArgsPanel();
         mainPanel.add(argsPanel);
 
-        mainPanel.add(this.initializeJavaPicker(););
-        //JPanel langPanel = this.initializeLangPicker();
-        //mainPanel.add(langPanel);
+        JPanel langPanel = this.initializeLangPicker();
+        mainPanel.add(langPanel);
 
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
@@ -501,7 +500,9 @@ public class RelauncherGUI extends JDialog {
                 return this;
             }
         });
-        langBox.setSelectedItem(langs.iterator().next());
+        if (!langs.isEmpty()) {
+            langBox.setSelectedItem(langs.iterator().next());
+        }
         langBox.setMaximumRowCount(5);
         langBox.addActionListener(e -> {
             Map.Entry<String, String> selectedLanguage = (Map.Entry<String, String>) langBox.getSelectedItem();
