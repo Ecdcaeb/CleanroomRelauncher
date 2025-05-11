@@ -203,8 +203,8 @@ public class RelauncherGUI extends JDialog {
         JPanel argsPanel = this.initializeArgsPanel();
         mainPanel.add(argsPanel);
 
-        JPanel langPanel = this.initializeLangPicker();
-        mainPanel.add(langPanel);
+        //JPanel langPanel = this.initializeLangPicker();
+        //mainPanel.add(langPanel);
 
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
