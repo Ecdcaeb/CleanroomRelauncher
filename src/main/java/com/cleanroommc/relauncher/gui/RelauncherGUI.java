@@ -499,7 +499,7 @@ public class RelauncherGUI extends JDialog {
             Map.Entry<String, String> selectedLanguage = (Map.Entry<String, String>) langBox.getSelectedItem();
             if (selectedLanguage != null) {
                 I18n.load(selectedLanguage.getKey());
-                RelauncherGUI.this.updateUI();
+                //RelauncherGUI.this.updateUI();
             }
         });
         dropdown.add(langBox);
