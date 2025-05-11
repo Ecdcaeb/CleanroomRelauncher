@@ -24,7 +24,7 @@ public class I18n {
                 langs.add(entry.getKey());
             }
         } catch (Throwable e) {
-            
+            CleanroomRelauncher.LOGGER.error(e);
         }
 
         // load en_us as default
@@ -33,7 +33,7 @@ public class I18n {
                 locales.put(entry.getKey(), entry.getValue().getAsString());
             }
         } catch (Throwable e) {
-            
+            CleanroomRelauncher.LOGGER.error(e);
         }
 
         // load custom langs
@@ -43,7 +43,7 @@ public class I18n {
                     locales.putIfAbsent(entry.getKey(), entry.getValue().getAsString());
                 }
             } catch (Throwable e) {
-                
+                CleanroomRelauncher.LOGGER.error(e);
             }
         }
     }
