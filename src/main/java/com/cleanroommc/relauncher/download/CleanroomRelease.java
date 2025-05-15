@@ -2,15 +2,20 @@ package com.cleanroommc.relauncher.download;
 
 import com.cleanroommc.relauncher.CleanroomRelauncher;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.*;
 
 import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.FileSystems;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -18,6 +23,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Lists;
+import java.util.Objects;
 
 public class CleanroomRelease {
 
@@ -162,12 +169,14 @@ public class CleanroomRelease {
                 if (!Files.exists(targetPath)) {
                     Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
                 }
-                this.name = artifact.getName();
-                this.tagName = artifact.getName();
-                this.assets = new ArrayList();
+                String version = getVersion(artifact);
+                this.name = version
+                this.tagName = version
                 Asset ass = new Asset(artifact);
                 ass.downloadUrl = targetPath.toUri().toURL().toString();
                 assets.add(ass);
+                this.assets = Lists.asList(ass);
+                
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
@@ -175,6 +184,48 @@ public class CleanroomRelease {
 
         public static Snapshot of(File file) {
             return new Snapshot(file);
+        }
+
+        private static String getVersion(File file) {
+            Path sourcePath = file.toPath();
+            String version = getVersionFromMMC(sourcePath);
+            if (version == null) {
+                version = getVersionFromInstaller(sourcePath);
+                if (version == null) {
+                    return file.getName();
+                } else return version;
+            } else return version;
+        }
+
+        private static String getVersionFromInstaller(Path file) {
+            try (var fs = FileSystems.newFileSystem(zipFilePath, (ClassLoader) null)) {
+                Path targetPath = fs.getPath("version.json");
+                if (Files.exists(targetPath)) {
+                    try (InputStream is = Files.newInputStream(targetPath);
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                        return new JsonParser().parse(reader).getAsJsonObject().get("id").getAsString();
+                    }
+                }
+            } cache(Throwable ignored) {}
+            return null;
+        }
+
+        private static String getVersionFromMMC(Path file) {
+            try (var fs = FileSystems.newFileSystem(zipFilePath, (ClassLoader) null)) {
+                Path targetPath = fs.getPath("mmc-pack.json");
+                if (Files.exists(targetPath)) {
+                    try (InputStream is = Files.newInputStream(targetPath);
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                        for(JsonElement element : new JsonParser().parse(reader).getAsJsonObject().get("components").getAsJsonArray()) {
+                            JsonObject job = element.getAsJsonObject();
+                            if("Cleanroom".equals(job.get("cachedName").getAsString())) {
+                                return job.get("version").getAsString();
+                            }
+                        }
+                    }
+                }
+            } cache(Throwable ignored) {}
+            return null;
         }
     }
 
